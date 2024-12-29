@@ -47,7 +47,7 @@ public class GuiController {
 
 
     //Поля для управления мышкой
-
+    //Работает
     private double startX;
     private double startY;
 

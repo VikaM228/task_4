@@ -17,14 +17,14 @@ public class Rasterization {
             final Color[] colors,
             double[][] zBuffer,
             boolean polyGrid,
-            boolean fillTriangles, // New variable to determine if triangles are filled
+            boolean fillTriangles,
             Model mesh,
             Vector2f[] textures,
             double[] light,
             Vector3f[] normals) {
 
         final PixelWriter pixelWriter = graphicsContext.getPixelWriter();
-
+        // Сортировка вершин треугольника по Y
         sort(arrX, arrY, arrZ, normals, textures, colors);
 
         for (int y = arrY[0]; y <= arrY[1]; y++) {
@@ -89,12 +89,12 @@ public class Rasterization {
                         if ((barizenticCoordinate[0] < 0.01 || barizenticCoordinate[1] < 0.01 || barizenticCoordinate[2] < 0.01) & polyGrid) {
                             pixelWriter.setColor(x, y, Color.WHITE);
                             continue;
-                        } else if (!fillTriangles) {
-                            continue; // Skip filling if the flag is false
-                        } else if (mesh.isActiveTexture) {
+                        } else if (!fillTriangles) { // Пропуск заливки, если выключено
+                            continue;
+                        } else if (mesh.isActiveTexture) { // Использование текстуры
                             texture(barizenticCoordinate, textures, mesh, rgb);
                         }
-                        if (mesh.isActiveLighting){
+                        if (mesh.isActiveLighting){ // Применение освещения
                             light(barizenticCoordinate, normals, light, rgb);
                         }
                         pixelWriter.setColor(x, y,  Color.rgb(rgb[0], rgb[1], rgb[2]));
@@ -105,13 +105,13 @@ public class Rasterization {
 
 
     }
-
+    // Вычисление детерминанта матрицы
     private static double determinator(int[][] arr) {
         return arr[0][0] * arr[1][1] * arr[2][2] + arr[1][0] * arr[0][2] * arr[2][1] +
                 arr[0][1] * arr[1][2] * arr[2][0] - arr[0][2] * arr[1][1] * arr[2][0] -
                 arr[0][0] * arr[1][2] * arr[2][1] - arr[0][1] * arr[1][0] * arr[2][2];
     }
-
+    // Вычисление барицентрических координат
     private static double[] barizentricCalculator(int x, int y, int[] arrX, int[] arrY){
         final double generalDeterminant = determinator(new int[][]{arrX, arrY, new int[]{1, 1, 1}});
         final double coordinate0 = Math.abs(determinator(
@@ -125,7 +125,7 @@ public class Rasterization {
                 generalDeterminant);
         return new double[]{coordinate0, coordinate1, coordinate2};
     }
-
+    // Интерполяция RGB-цветов на основе барицентрических координат
     public static int[] getGradientCoordinatesRGB(final double[] baristicCoords, final Color[] color) {
         int r = Math.min(255, (int) Math.abs(color[0].getRed() * 255 * baristicCoords[0] + color[1].getRed()
                 * 255 * baristicCoords[1] + color[2].getRed() * 255 * baristicCoords[2]));
@@ -136,7 +136,7 @@ public class Rasterization {
 
         return new int[]{r, g, b};
     }
-
+    // Сортировка вершин по Y-координате
     private static void sort(int[] x, int[] y, double[] z, Vector3f[] n, Vector2f[] t, Color[] c) {
         if (y[0] > y[1]) {
             swap(x, y, z, c, n, t, 0, 1);
@@ -148,7 +148,7 @@ public class Rasterization {
             swap(x, y, z, c, n, t, 0, 1);
         }
     }
-
+    // Обмен значениями между двумя вершинами
     private static void swap(int[] x, int[] y, double[] z, Color[] c, Vector3f[] n, Vector2f[] t, int i, int j) {
         int tempY = y[i];
         int tempX = x[i];

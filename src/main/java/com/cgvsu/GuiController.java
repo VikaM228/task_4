@@ -76,7 +76,7 @@ public class GuiController {
     private boolean polyGrid = false;
     private boolean fillTriangles = true;
 
-    javafx.scene.paint.Color[] colors;
+    javafx.scene.paint.Color[] colors = new Color[]{Color.WHITE, Color.WHITE, Color.WHITE};
 
 
     //кнопки моделей

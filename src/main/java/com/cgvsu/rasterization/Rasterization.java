@@ -169,12 +169,12 @@ public class Rasterization {
         n[j] = tempN;
         t[j] = tempT;
     }
-
+    // Вычисляет координаты текстуры на основе барицентрических координат.
     public static double[] getGradientCoordinatesTexture(double[] barizentric, Vector2f[] texture) {
         return new double[] {(barizentric[0] * texture[0].getX()) +  (barizentric[1] * texture[1].getX()) +  (barizentric[2] * texture[2].getX()),
                 (barizentric[0] * texture[0].getX()) + (barizentric[1] * texture[1].getY()) + (barizentric[2] * texture[2].getY())};
     }
-
+    // Применяет текстуру к пикселю.
     public static void texture(double[] barizentric, Vector2f[] textures, Model mesh, int[] rgb){
         double[] texture = getGradientCoordinatesTexture(barizentric, textures);
         int u = (int) Math.round(texture[0] * (mesh.texture.wight - 1));
@@ -185,24 +185,26 @@ public class Rasterization {
             rgb[2] = mesh.texture.pixelData[u][v][2];
         }
     }
+    // Рассчитывает освещение пикселя.
     public static void calculateLight(int[] rgb, double[] light, Vector3f normal){
         double k = 0.5;
         double l = -(light[0] * normal.getX() + light[1] * normal.getY() + light[2] * normal.getZ());
         if(l < 0){
             l = 0;
         }
-        rgb[0] = Math.min(255, (int) (rgb[0] * (1 - k) + rgb[0] * k * l));
-        rgb[1] = Math.min(255, (int) (rgb[1] * (1 - k) + rgb[1] * k * l));
-        rgb[2] = Math.min(255, (int) (rgb[2] * (1 - k) + rgb[2] * k * l));
+        rgb[0] = Math.min(255, (int) (rgb[0] * (1 - k) + rgb[0] * k * l)); // Освещение красного канала
+        rgb[1] = Math.min(255, (int) (rgb[1] * (1 - k) + rgb[1] * k * l)); // Освещение зеленого канала
+        rgb[2] = Math.min(255, (int) (rgb[2] * (1 - k) + rgb[2] * k * l)); // Освещение синего канала
     }
+    // Интерполирует нормали для плавного освещения.
     public static Vector3f smoothingNormal(final double[] baristicCoords, final Vector3f[] normals) {
         return new Vector3f((float) (baristicCoords[0] * normals[0].getX() + baristicCoords[1] * normals[1].getX() + baristicCoords[2] * normals[2].getX()),
                 (float) (baristicCoords[0] * normals[0].getY() + baristicCoords[1] * normals[1].getY() + baristicCoords[2] * normals[2].getY()),
                 (float) (baristicCoords[0] * normals[0].getZ() + baristicCoords[1] * normals[1].getZ() + baristicCoords[2] * normals[2].getZ()));
     }
-
+    // Выполняет финальный расчет освещения.
     public static void light(final double[] barizentric, final Vector3f[] normals, double[] light, int[] rgb){
-        Vector3f smooth = smoothingNormal(barizentric, normals);
+        Vector3f smooth = smoothingNormal(barizentric, normals); // Интерполированная нормаль
         calculateLight(rgb, light, smooth);
     }
 }

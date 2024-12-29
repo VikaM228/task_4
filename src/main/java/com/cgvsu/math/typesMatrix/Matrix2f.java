@@ -4,7 +4,7 @@ package com.cgvsu.math.typesMatrix;
 import com.cgvsu.math.core.MatrixWrapper;
 import com.cgvsu.math.types.SquareMatrix;
 import com.cgvsu.math.typesVectors.Vector2f;
-
+//матрицы для работы с математикой
 /**
  * Класс для работы с матрицами размером 2x2.
  * <p>

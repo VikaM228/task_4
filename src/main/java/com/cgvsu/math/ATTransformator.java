@@ -7,6 +7,7 @@ import com.cgvsu.math.typesVectors.Vector4f;
 import com.cgvsu.model.Model;
 
 import java.util.ArrayList;
+//класс афинных преобразований для того чтобы мы могли изменять модели по XYZ
 
 public class ATTransformator {
 

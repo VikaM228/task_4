@@ -6,6 +6,7 @@ import com.cgvsu.math.typesMatrix.Matrix2f;
 import com.cgvsu.math.typesMatrix.Matrix3f;
 import com.cgvsu.math.typesVectors.Vector3f;
 //тут все
+//important
 /**
  * Некоторые примеры использования библиотеки
  */

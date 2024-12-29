@@ -5,7 +5,7 @@ import com.cgvsu.math.types.RecMatrix;
 import com.cgvsu.math.typesMatrix.Matrix2f;
 import com.cgvsu.math.typesMatrix.Matrix3f;
 import com.cgvsu.math.typesVectors.Vector3f;
-
+//тут все
 /**
  * Некоторые примеры использования библиотеки
  */

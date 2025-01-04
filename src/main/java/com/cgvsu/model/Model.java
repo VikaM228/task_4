@@ -116,7 +116,7 @@ public class Model {
             } else {
                 // Выполняем триангуляцию с помощью "веерного" метода
                 for (int i = 1; i < vertexIndices.size() - 1; i++) {
-                    Polygon triangle = new Polygon(); // Создаём новый треугольник
+                    Polygon triangle = new Polygon(points); // Создаём новый треугольник
 
                     // Добавляем индексы вершин треугольника
                     triangle.addVertexIndex(vertexIndices.get(0)); // Первая вершина веера

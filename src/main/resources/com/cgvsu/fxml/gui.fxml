@@ -32,14 +32,11 @@
             </MenuItem>
         </Menu>
         <Menu mnemonicParsing="false" text="Camera Options">
-            <!--Марина, добавь сюда описание того, что на левую кнопку мы поворачиваемся по орбите,
-            а при нажатии на колёсико мы двигаем камеру в плоскости. тип того
-            если что первый метод Camera Orbit, а второй Camera Move-->
         </Menu>
         <Menu mnemonicParsing="false" text="Change the model">
             <MenuItem mnemonicParsing="false" onAction="#delvertex" text="Delete vertices">
             </MenuItem>
-            <MenuItem mnemonicParsing="false" text="Delete polygon">
+            <MenuItem mnemonicParsing="false"  onAction="#delpolygon" text="Delete polygon">
             </MenuItem>
         </Menu>
         <Menu mnemonicParsing="false" text="Model">

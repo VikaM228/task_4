@@ -229,7 +229,7 @@ public class ObjReader {
 	}
 
 	protected Polygon createPolygon(FaceWord[] faceWords) {
-		Polygon polygon = new Polygon();
+		Polygon polygon = new Polygon(points);
 		List<Integer> vertexIndices = new ArrayList<>();
 		List<Integer> textureVertexIndices = new ArrayList<>();
 		List<Integer> normalIndices = new ArrayList<>();

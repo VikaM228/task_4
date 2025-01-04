@@ -1,11 +1,11 @@
 package com.cgvsu;
 
-import com.cgvsu.SetModels.ModelManager;
 import com.cgvsu.deletevertex.DeleteVertex;
 import com.cgvsu.math.typesMatrix.Matrix4f;
 import com.cgvsu.math.typesVectors.Vector3f;
 import com.cgvsu.model.Model;
 import com.cgvsu.model.ModelTransformer;
+import com.cgvsu.model.Polygon;
 import com.cgvsu.model.TranslationModel;
 import com.cgvsu.objreader.ObjReader;
 import com.cgvsu.objreader.ObjWriter;
@@ -23,7 +23,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Background;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -65,13 +65,9 @@ public class GuiController {
     @FXML
     private Button showSettingsButton;
 
-    private Model oldModel = null;
-
     private Model triangulatedModel = null;
 
-    private boolean triangulated = false;
 
-    private ModelManager modelManager = new ModelManager();
 
     private boolean polyGrid = false;
     private boolean fillTriangles = true;
@@ -82,11 +78,6 @@ public class GuiController {
     //кнопки моделей
     public AnchorPane modelPane;
     private List<Button> addedButtonsModel = new ArrayList<>();
-    private List<CheckBox> checkBoxesTexture = new ArrayList<>();
-    private List<CheckBox> checkBoxesLighting = new ArrayList<>();
-    private List<CheckBox> checkBoxesGrid = new ArrayList<>();
-    private List<RadioButton> choiceModelRadioButtons = new ArrayList<>();
-    private List<CheckBox> checkBoxesTriangulation = new ArrayList<>();
     //кнопки удаления моделей
     private List<Button> deletedButtonsModel = new ArrayList<>();
 
@@ -123,6 +114,13 @@ public class GuiController {
     private List<Camera> camerasList = new ArrayList<>();
     private Camera curCamera;
 
+    private List<Model> models = new ArrayList<>();
+    private Model curModel;
+
+
+    private List<Polygon> polygons = new ArrayList<>(); // Список полигонов
+
+
 
     @FXML
     private void initialize() {
@@ -149,8 +147,8 @@ public class GuiController {
             canvas.setOnMouseDragged(this::handleMouseDragged);
             canvas.setOnScroll(this::mouseCameraZoom);
 
-            if (modelManager != null) {
-                for (Model model: modelManager.getModels()) {
+            if (models != null) {
+                for (Model model: models) {
                     canvas.getGraphicsContext2D().setStroke(Color.WHITE);
                     RenderEngine.render(canvas.getGraphicsContext2D(), curCamera, model, (int) width, (int) height,
                             zBuffer, polyGrid, fillTriangles, colors);
@@ -178,21 +176,18 @@ public class GuiController {
 
         try {
             String fileContent = Files.readString(fileName);
-            oldModel = ObjReader.read(fileContent);
             triangulatedModel = ObjReader.read(fileContent);
             // Триангуляция и расчёт нормалей
             triangulatedModel.triangulate();
             triangulatedModel.normalize();
-            modelManager.addModel(triangulatedModel);
-            modelManager.setActiveModel(triangulatedModel);
+            models.add(triangulatedModel);
+            curModel = triangulatedModel;
             addModelButtons();
         } catch (IOException exception) {
-            showError("Ошибка чтения файла", "Не удалось прочитать файл"+ exception.getMessage());
-        } /*catch (InvalidFileFormatException exception) {
-            showError("Некорректный файл", "Файл имеет неправильный формат"+ exception.getMessage());
-        }*/
+            showError("404", "Ошибка в чтении файла"+ exception.getMessage());
+        }
         catch (Exception exception) {
-            showError("Неизвестная ошибка", "Произошла неизвестная ошибка" + exception.getMessage());
+            showError("404", "Произошел какой-то сбой" + exception.getMessage());
         }
     }
     @FXML
@@ -201,22 +196,17 @@ public class GuiController {
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Объектные файлы", "*.obj"));
         File file = fileChooser.showSaveDialog(null);
 
-        if (modelManager.getActiveModel()!=null) {
+        if (models!=null) {
             if (file != null) {
                 String filename = file.getAbsolutePath();
-                // Создаем экземпляр ObjWriterClass для записи модели
-                ObjWriter.write(modelManager.getActiveModel(), filename);  // Сохраняем модель
+                ObjWriter.write(curModel, filename);
 
                 System.out.println("Модель сохранена в файл: " + filename);
-            } else {
-                showError("Ошибка сохранения", "Введите имя");
             }
-        }
-        else {
-            showError("Ошибка сохранения", "Нет модели");
+        }else {
+            showError("404","Не удалось сохранить. Модель не найдена");
         }
     }
-    // Метод для отображения сообщения об ошибке
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -227,58 +217,49 @@ public class GuiController {
 
     @FXML
     public void delvertex(ActionEvent actionEvent){
-        // Создаем диалог для ввода списка вершин
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Удалить вершины");
         dialog.setHeaderText("Введите ID вершин для удаления (через запятую):");
         dialog.setContentText("Вершины:");
 
-        // Отображаем диалог и ждем ответа
         String result = dialog.showAndWait().orElse("");
 
         if (!result.isEmpty()) {
-            // Разделяем введенные данные на список вершин и удаляем лишние пробелы
             String[] verticesArray = result.split(",");
             List<Integer> verticesToDelete = new ArrayList<>();
 
-            // Преобразуем строки в целые числа и добавляем в список
+
             for (String vertexStr : verticesArray) {
                 try {
-                    verticesToDelete.add(Integer.parseInt(vertexStr.trim())); // парсим строку в Integer
+                    verticesToDelete.add(Integer.parseInt(vertexStr.trim()));
                 } catch (NumberFormatException e) {
-                    showError("Ошибка ввода", "Некоторые элементы не являются целыми числами.");
-                    return; // Выход из метода, если был неправильный ввод
+                    showError("404", "Некоторые элементы не являются целыми числами.");
+                    return;
                 }
             }
             boolean flag1 = askForFlag("Удалять нормали?");
             boolean flag2 = askForFlag("Удалять текстурные вершины?");
-            // Создаем экземпляр DeleteVertex для удаления вершин
-
-            DeleteVertex.deleteVertex(modelManager.getActiveModel(),verticesToDelete,flag1,flag2) ;
-            // Удаляем вершины
+            DeleteVertex.deleteVertex(curModel,verticesToDelete,flag1,flag2) ;
             activeModelnull();
         } else {
-            showError("Ошибка", "Вы не ввели ни одной вершины.");
+            showError("404", "Введите индексы вершин.");
         }
     }
     private void activeModelnull(){
-        if(modelManager.getActiveModel().getVertices().isEmpty()){
-            System.out.println(1);
-            modelManager.delModels(modelManager.getActiveModel());
-            if (!modelManager.getModels().isEmpty()){
-                modelManager.setActiveModel(modelManager.getModels().get(modelManager.getModels().size()-1));
+        if(curModel.getVertices().isEmpty()){
+            models.remove(curModel);
+            if (!models.isEmpty()){
+                curModel = models.get(models.size()-1);
             }
         }
     }
     // Метод для запроса флажка true/false для каждой вершины
     private boolean askForFlag(String headerText) {
-        // Создаем диалог для ввода флажка (true/false)
         ChoiceDialog<String> dialog = new ChoiceDialog<>("Да", "Да", "Нет");
         dialog.setTitle("Выбор флажка");
         dialog.setHeaderText(headerText);
         dialog.setContentText("Выберите флажок:");
 
-        // Отображаем диалог и ждем ответа
         String result = dialog.showAndWait().orElse("false");
 
         return result.equals("true");
@@ -289,7 +270,7 @@ public class GuiController {
     }
 
     public void toggleTriangleFill(ActionEvent actionEvent) {
-         fillTriangles = !fillTriangles;
+        fillTriangles = !fillTriangles;
     }
 
 
@@ -304,7 +285,7 @@ public class GuiController {
 
         if (!result.isEmpty()) {
             try {
-                modelManager.setActiveModel(modelManager.getModels().get(Integer.parseInt(result)-1));
+                curModel = models.get(Integer.parseInt(result)-1);
             } catch (NumberFormatException e) {
                 showError("Ошибка ввода", "Элемент не является целым числом.");
             }
@@ -314,15 +295,9 @@ public class GuiController {
         }
     }
 
-    public void DeleteModel(ActionEvent actionEvent) {
-        modelManager.delModels(modelManager.getActiveModel());
-        if (!modelManager.getModels().isEmpty()){
-            modelManager.setActiveModel(modelManager.getModels().get(modelManager.getModels().size()-1));
-        }
-        else{
-            modelManager.setActiveModel(null);
-        }
-    }
+
+
+
 
     public void lightning(ActionEvent actionEvent) {
     }
@@ -335,13 +310,11 @@ public class GuiController {
 
     }
     public void deleteCamera(int index){
-        // Предполагается что индекс у камер будет начинаться с 1
         index -= 1;
         if (camerasList.size() == 1){
             return;
         }
         if (curCamera == camerasList.get(index)){
-            // Марин это тебе место для обработки ошибок
             curCamera = camerasList.get(index - 1);
         }
         camerasList.remove(index);
@@ -410,31 +383,62 @@ public class GuiController {
 
 
     public void addModelButtons() {
+        // Создаем кнопку добавления модели
         Button addButton = new Button("Модель " + (addedButtonsModel.size() + 1));
         addButton.setLayoutY((addedButtonsModel.size() > 0) ?
-               deletedButtonsModel.get(deletedButtonsModel.size()-1).getLayoutY() + 50 :
+                deletedButtonsModel.get(deletedButtonsModel.size() - 1).getLayoutY() + 50 :
                 20);
         addButton.setLayoutX(20);
         addedButtonsModel.add(addButton);
 
+        // Создаем кнопку удаления
         Button deleteButton = new Button("Удалить");
-        deleteButton.setLayoutY(addedButtonsModel.get(addedButtonsModel.size() - 1).getLayoutY());
-        deleteButton.setLayoutX(addedButtonsModel.get(addedButtonsModel.size() - 1).getLayoutX() + 85);
+        deleteButton.setLayoutY(addButton.getLayoutY());
+        deleteButton.setLayoutX(addButton.getLayoutX() + 85);
+
         deletedButtonsModel.add(deleteButton);
 
-
-
+        // Добавляем кнопки на панель
         modelPane.getChildren().add(addButton);
         modelPane.getChildren().add(deleteButton);
 
+        // Устанавливаем действие для кнопки добавления
         addButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
                 setActiveModel(addedButtonsModel.indexOf(addButton));
                 setActiveModelColor(addButton);
-
             }
         });
+
+        // Устанавливаем действие для кнопки удаления
+        deleteButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                int index = addedButtonsModel.indexOf(addButton);
+
+                if (index >= 0 && index < models.size()) {
+                    modelPane.getChildren().remove(models.get(index));
+                    models.remove(index);
+                }
+                // Удаляем кнопки из списков и из модели
+                modelPane.getChildren().remove(addButton);
+                modelPane.getChildren().remove(deleteButton);
+                addedButtonsModel.remove(addButton);
+                deletedButtonsModel.remove(deleteButton);
+            }
+        });
+    }
+
+
+    public void DeleteModel(ActionEvent actionEvent) {
+        models.remove(curModel);
+        if (!models.isEmpty()){
+            curModel = models.get(models.size()-1);
+        }
+        else{
+            curModel = null;
+        }
     }
 
     public void setActiveModelColor(Button addButton){
@@ -446,8 +450,7 @@ public class GuiController {
     }
 
     public void setActiveModel(int index){
-
-        modelManager.setActiveModel(modelManager.getModels().get(index));
+        curModel = models.get(index);
     }
 
     public void handleColorPickerAction(){
@@ -499,14 +502,14 @@ public class GuiController {
     //кнопочка преобразовать тут её функция при нажатии //TODO добавить правильный выбор моделей
     public void convert(MouseEvent mouseEvent) {
         if (Objects.equals(Tx.getText(), "") || Objects.equals(Ty.getText(), "") || Objects.equals(Tz.getText(), "")
-        || Objects.equals(Sx.getText(), "") || Objects.equals(Sy.getText(), "") || Objects.equals(Sz.getText(), "")) {
-            showError("Ошибка", "Введите необходимые данные!");
+                || Objects.equals(Sx.getText(), "") || Objects.equals(Sy.getText(), "") || Objects.equals(Sz.getText(), "")) {
+            showError("Ошибочка", "Введите данные!");
         } else {
             Matrix4f transposeMatrix = ModelTransformer.modelMatrix(
                     Double.parseDouble(Tx.getText()), Double.parseDouble(Ty.getText()), Double.parseDouble(Tz.getText()),
                     Double.parseDouble("0"), Double.parseDouble("0"), Double.parseDouble("0"),
                     Double.parseDouble(Sx.getText()), Double.parseDouble(Sy.getText()), Double.parseDouble(Sz.getText()));
-            TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
+            TranslationModel.move(transposeMatrix, curModel);
             Tx.setText("0");
             Ty.setText("0");
             Tz.setText("0");
@@ -516,38 +519,33 @@ public class GuiController {
         }
     }
 
-    //быстрые кнопочки для наташи
 
-    //кнопочка перенести в начало координат
-    public void MoveToTheOrigin(ActionEvent actionEvent) {
-        Vector3f center = modelManager.getActiveModel().getCenter().multiplied(-1);
-        Matrix4f transposeMatrix = ModelTransformer.translateMatrix(center.getX(), center.getY(), center.getZ());
-        TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
-    }
+    public void delpolygon(ActionEvent actionEvent) {
+        if (!polygons.isEmpty()) {
+            // Удаляем последний добавленный полигон
+            Polygon polygonToRemove = polygons.get(polygons.size() - 1);
 
-    public void Rotate90x(ActionEvent actionEvent) {
-        Matrix4f transposeMatrix = ModelTransformer.rotateMatrix(90, 0, 0);
-        TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
-    }
+            // Удаляем полигон с панели
+            modelPane.getChildren().remove(polygonToRemove);
 
-    public void Rotate90y(ActionEvent actionEvent) {
-        Matrix4f transposeMatrix = ModelTransformer.rotateMatrix(0, 90, 0);
-        TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
+            // Удаляем полигон из списка
+            polygons.remove(polygonToRemove);
+        } else {
+            System.out.println("Нет полигонов для удаления!");
+        }
     }
 
-    public void Rotate90z(ActionEvent actionEvent) {
-        Matrix4f transposeMatrix = ModelTransformer.rotateMatrix(0, 0, 90);
-        TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
+    public Pane getModelPane() {
+        return modelPane;
     }
-    //Увеличить в 2 раза
-    public void increase2(ActionEvent actionEvent) {
-        Matrix4f transposeMatrix = ModelTransformer.scaleMatrix(2, 2, 2);
-        TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
-    }
-    //Уменьшить в 2 раза
-    public void reduce2(ActionEvent actionEvent) {
-        Matrix4f transposeMatrix = ModelTransformer.scaleMatrix(0.5, 0.5, 0.5);
-        TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
+
+    public void addPolygon(double... points) {
+        Polygon polygon = new Polygon(points);
+        polygon.setFill(Color.LIGHTBLUE); // Задаём цвет
+        polygon.setStroke(Color.BLACK);  // Контур полигона
+
+        polygons.add(polygon);
+        modelPane.getChildren().add(polygon);
     }
 }
-//новая кнопочка имеется
+

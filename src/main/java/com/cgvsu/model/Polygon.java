@@ -1,19 +1,17 @@
 package com.cgvsu.model;
 
 import com.cgvsu.objreader.exceptions.FaceWordIndexException;
-import javafx.scene.Node;
-import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Polygon extends Node {
+public class Polygon {
     private List<Integer> vertexIndices;
     private List<Integer> textureVertexIndices;
     private List<Integer> normalIndices;
 
-    public Polygon(double[] points) {
+    public Polygon() {
         vertexIndices = new ArrayList<>();
         textureVertexIndices = new ArrayList<>();
         normalIndices = new ArrayList<>();
@@ -108,14 +106,4 @@ public class Polygon extends Node {
         normalIndices.add(index);
     }
 
-    public void setFill(Color lightblue) {
-    }
-
-    public void setStroke(Color black) {
-    }
-
-    @Override
-    public Node getStyleableNode() {
-        return super.getStyleableNode();
-    }
 }

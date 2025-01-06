@@ -45,7 +45,6 @@ public class GuiController {
     final private float TRANSLATION = 0.5F;
 
 
-
     //Поля для управления мышкой
     //Работает
     private double startX;
@@ -66,7 +65,6 @@ public class GuiController {
     private Button showSettingsButton;
 
     private Model triangulatedModel = null;
-
 
 
     private boolean polyGrid = false;
@@ -100,7 +98,6 @@ public class GuiController {
     public Button convert;
 
 
-
     //для добавления камеры
     public TextField eyeX;
     public TextField targetX;
@@ -110,16 +107,11 @@ public class GuiController {
     public TextField targetZ;
 
 
-
     private List<Camera> camerasList = new ArrayList<>();
     private Camera curCamera;
 
     private List<Model> models = new ArrayList<>();
     private Model curModel;
-
-
-    private List<Polygon> polygons = new ArrayList<>(); // Список полигонов
-
 
 
     @FXML
@@ -148,7 +140,7 @@ public class GuiController {
             canvas.setOnScroll(this::mouseCameraZoom);
 
             if (models != null) {
-                for (Model model: models) {
+                for (Model model : models) {
                     canvas.getGraphicsContext2D().setStroke(Color.WHITE);
                     RenderEngine.render(canvas.getGraphicsContext2D(), curCamera, model, (int) width, (int) height,
                             zBuffer, polyGrid, fillTriangles, colors);
@@ -184,29 +176,30 @@ public class GuiController {
             curModel = triangulatedModel;
             addModelButtons();
         } catch (IOException exception) {
-            showError("404", "Ошибка в чтении файла"+ exception.getMessage());
-        }
-        catch (Exception exception) {
+            showError("404", "Ошибка в чтении файла" + exception.getMessage());
+        } catch (Exception exception) {
             showError("404", "Произошел какой-то сбой" + exception.getMessage());
         }
     }
+
     @FXML
-    public void saveModel(){
+    public void saveModel() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Объектные файлы", "*.obj"));
         File file = fileChooser.showSaveDialog(null);
 
-        if (models!=null) {
+        if (models != null) {
             if (file != null) {
                 String filename = file.getAbsolutePath();
                 ObjWriter.write(curModel, filename);
 
                 System.out.println("Модель сохранена в файл: " + filename);
             }
-        }else {
-            showError("404","Не удалось сохранить. Модель не найдена");
+        } else {
+            showError("404", "Не удалось сохранить. Модель не найдена");
         }
     }
+
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -216,7 +209,7 @@ public class GuiController {
     }
 
     @FXML
-    public void delvertex(ActionEvent actionEvent){
+    public void delvertex(ActionEvent actionEvent) {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Удалить вершины");
         dialog.setHeaderText("Введите ID вершин для удаления (через запятую):");
@@ -239,20 +232,22 @@ public class GuiController {
             }
             boolean flag1 = askForFlag("Удалять нормали?");
             boolean flag2 = askForFlag("Удалять текстурные вершины?");
-            DeleteVertex.deleteVertex(curModel,verticesToDelete,flag1,flag2) ;
+            DeleteVertex.deleteVertex(curModel, verticesToDelete, flag1, flag2);
             activeModelnull();
         } else {
             showError("404", "Введите индексы вершин.");
         }
     }
-    private void activeModelnull(){
-        if(curModel.getVertices().isEmpty()){
+
+    private void activeModelnull() {
+        if (curModel.getVertices().isEmpty()) {
             models.remove(curModel);
-            if (!models.isEmpty()){
-                curModel = models.get(models.size()-1);
+            if (!models.isEmpty()) {
+                curModel = models.get(models.size() - 1);
             }
         }
     }
+
     // Метод для запроса флажка true/false для каждой вершины
     private boolean askForFlag(String headerText) {
         ChoiceDialog<String> dialog = new ChoiceDialog<>("Да", "Да", "Нет");
@@ -285,18 +280,14 @@ public class GuiController {
 
         if (!result.isEmpty()) {
             try {
-                curModel = models.get(Integer.parseInt(result)-1);
+                curModel = models.get(Integer.parseInt(result) - 1);
             } catch (NumberFormatException e) {
                 showError("Ошибка ввода", "Элемент не является целым числом.");
-            }
-            catch (IndexOutOfBoundsException e){
-                showError("Ошибка выбора модели","Индекса такой модели нет");
+            } catch (IndexOutOfBoundsException e) {
+                showError("Ошибка выбора модели", "Индекса такой модели нет");
             }
         }
     }
-
-
-
 
 
     public void lightning(ActionEvent actionEvent) {
@@ -304,17 +295,19 @@ public class GuiController {
 
     public void texture(ActionEvent actionEvent) {
     }
-    public void addNewCamera(Vector3f cameraPos, Vector3f targetPos){
+
+    public void addNewCamera(Vector3f cameraPos, Vector3f targetPos) {
         camerasList.add(new Camera(cameraPos, targetPos, 1.0F, 1, 0.01F, 100));
         curCamera = camerasList.get(camerasList.size() - 1);
 
     }
-    public void deleteCamera(int index){
+
+    public void deleteCamera(int index) {
         index -= 1;
-        if (camerasList.size() == 1){
+        if (camerasList.size() == 1) {
             return;
         }
-        if (curCamera == camerasList.get(index)){
+        if (curCamera == camerasList.get(index)) {
             curCamera = camerasList.get(index - 1);
         }
         camerasList.remove(index);
@@ -323,7 +316,7 @@ public class GuiController {
         addedButtonsCamera.remove(index);
         deletedButtonsCamera.remove(index);
         index = 1;
-        for (Button button: addedButtonsCamera){
+        for (Button button : addedButtonsCamera) {
             button.setText("Камера " + index);
             if (index != 1) {
                 button.setLayoutY((!addedButtonsCamera.isEmpty()) ?
@@ -337,7 +330,7 @@ public class GuiController {
         }
     }
 
-    public void setCurCamera(int index){
+    public void setCurCamera(int index) {
         index -= 1;
         curCamera = camerasList.get(index);
     }
@@ -433,27 +426,26 @@ public class GuiController {
 
     public void DeleteModel(ActionEvent actionEvent) {
         models.remove(curModel);
-        if (!models.isEmpty()){
-            curModel = models.get(models.size()-1);
-        }
-        else{
+        if (!models.isEmpty()) {
+            curModel = models.get(models.size() - 1);
+        } else {
             curModel = null;
         }
     }
 
-    public void setActiveModelColor(Button addButton){
+    public void setActiveModelColor(Button addButton) {
         for (Button button : addedButtonsModel) {
-            if(button.equals(addButton)) button.setStyle("-fx-background-color: #6d7073");
+            if (button.equals(addButton)) button.setStyle("-fx-background-color: #6d7073");
             else button.setStyle("-fx-background-color: #4b4e50");
 
         }
     }
 
-    public void setActiveModel(int index){
+    public void setActiveModel(int index) {
         curModel = models.get(index);
     }
 
-    public void handleColorPickerAction(){
+    public void handleColorPickerAction() {
         colors = new Color[]{colorPicker.getValue(), colorPicker.getValue(), colorPicker.getValue()}; //TODO aaaaaaaaaaaa
     }
 
@@ -483,7 +475,6 @@ public class GuiController {
         deletedButtonsCamera.add(deleteButton);
 
 
-
         cameraPane.getChildren().add(addButton);
         cameraPane.getChildren().add(deleteButton);
 
@@ -499,6 +490,7 @@ public class GuiController {
         addNewCamera(pos, targetPos);
 
     }
+
     //кнопочка преобразовать тут её функция при нажатии //TODO добавить правильный выбор моделей
     public void convert(MouseEvent mouseEvent) {
         if (Objects.equals(Tx.getText(), "") || Objects.equals(Ty.getText(), "") || Objects.equals(Tz.getText(), "")
@@ -520,32 +512,4 @@ public class GuiController {
     }
 
 
-    public void delpolygon(ActionEvent actionEvent) {
-        if (!polygons.isEmpty()) {
-            // Удаляем последний добавленный полигон
-            Polygon polygonToRemove = polygons.get(polygons.size() - 1);
-
-            // Удаляем полигон с панели
-            modelPane.getChildren().remove(polygonToRemove);
-
-            // Удаляем полигон из списка
-            polygons.remove(polygonToRemove);
-        } else {
-            System.out.println("Нет полигонов для удаления!");
-        }
-    }
-
-    public Pane getModelPane() {
-        return modelPane;
-    }
-
-    public void addPolygon(double... points) {
-        Polygon polygon = new Polygon(points);
-        polygon.setFill(Color.LIGHTBLUE); // Задаём цвет
-        polygon.setStroke(Color.BLACK);  // Контур полигона
-
-        polygons.add(polygon);
-        modelPane.getChildren().add(polygon);
-    }
 }
-

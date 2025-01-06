@@ -229,25 +229,25 @@ public class ObjReader {
 	}
 
 	protected Polygon createPolygon(FaceWord[] faceWords) {
-		Polygon polygon = new Polygon(points);
+		Polygon polygon = new Polygon();
 		List<Integer> vertexIndices = new ArrayList<>();
 		List<Integer> textureVertexIndices = new ArrayList<>();
 		List<Integer> normalIndices = new ArrayList<>();
 
-        for (FaceWord faceWord : faceWords) {
-            Integer vertexIndex = faceWord.getVertexIndex();
-            if (vertexIndex != null) {
-                vertexIndices.add(vertexIndex);
-            }
-            Integer textureVertexIndex = faceWord.getTextureVertexIndex();
-            if (textureVertexIndex != null) {
-                textureVertexIndices.add(textureVertexIndex);
-            }
-            Integer normalIndex = faceWord.getNormalIndex();
-            if (normalIndex != null) {
-                normalIndices.add(normalIndex);
-            }
-        }
+		for (FaceWord faceWord : faceWords) {
+			Integer vertexIndex = faceWord.getVertexIndex();
+			if (vertexIndex != null) {
+				vertexIndices.add(vertexIndex);
+			}
+			Integer textureVertexIndex = faceWord.getTextureVertexIndex();
+			if (textureVertexIndex != null) {
+				textureVertexIndices.add(textureVertexIndex);
+			}
+			Integer normalIndex = faceWord.getNormalIndex();
+			if (normalIndex != null) {
+				normalIndices.add(normalIndex);
+			}
+		}
 
 		polygon.setVertexIndices(vertexIndices);
 		polygon.setTextureVertexIndices(textureVertexIndices);

@@ -512,6 +512,6 @@ public class GuiController {
     }
 
 
-    public void delpolygon(ActionEvent actionEvent) {
+    public void delpolygon (ActionEvent actionEvent) {
     }
 }

@@ -46,7 +46,6 @@ public class GuiController {
 
 
     //Поля для управления мышкой
-    //Работает
     private double startX;
     private double startY;
 
@@ -480,7 +479,7 @@ public class GuiController {
 
     }
 
-    //кнопочка добавит камеру тут добавляется камера
+    //кнопочка добавит камеру
     public void createCamera(MouseEvent mouseEvent) {
         Vector3f pos = new Vector3f(Float.parseFloat(eyeX.getText()),
                 Float.parseFloat(eyeY.getText()), Float.parseFloat(eyeZ.getText()));
@@ -510,8 +509,7 @@ public class GuiController {
             Sz.setText("1");
         }
     }
-
-
-    public void delpolygon (ActionEvent actionEvent) {
+    @FXML
+    public void loadTexture(){
     }
 }

@@ -30,13 +30,11 @@
                     <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                 </accelerator>
             </MenuItem>
-        </Menu>
-        <Menu mnemonicParsing="false" text="Camera Options">
+            <MenuItem mnemonicParsing="false" onAction="#loadTexture" text="Load Textures">
+            </MenuItem>
         </Menu>
         <Menu mnemonicParsing="false" text="Change the model">
             <MenuItem mnemonicParsing="false" onAction="#delvertex" text="Delete vertices">
-            </MenuItem>
-            <MenuItem mnemonicParsing="false"  onAction="#delpolygon" text="Delete polygon">
             </MenuItem>
         </Menu>
         <Menu mnemonicParsing="false" text="Model">

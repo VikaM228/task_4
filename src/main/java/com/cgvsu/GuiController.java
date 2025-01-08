@@ -1,6 +1,5 @@
 package com.cgvsu;
 
-import com.cgvsu.SetModels.ModelManager;
 import com.cgvsu.deletevertex.DeleteVertex;
 import com.cgvsu.math.typesMatrix.Matrix4f;
 import com.cgvsu.math.typesVectors.Vector3f;
@@ -70,7 +69,9 @@ public class GuiController {
 
     private boolean triangulated = false;
 
-    private ModelManager modelManager = new ModelManager();
+    private List<Model> models = new ArrayList<>();
+    private Model curModel;
+
 
     private boolean polyGrid = false;
     private boolean fillTriangles = true;
@@ -143,8 +144,8 @@ public class GuiController {
             canvas.setOnMouseDragged(this::handleMouseDragged);
             canvas.setOnScroll(this::mouseCameraZoom);
 
-            if (modelManager != null) {
-                for (Model model: modelManager.getModels()) {
+            if (models != null) {
+                for (Model model : models) {
                     canvas.getGraphicsContext2D().setStroke(Color.WHITE);
                     RenderEngine.render(canvas.getGraphicsContext2D(), curCamera, model, (int) width, (int) height,
                             zBuffer, polyGrid, fillTriangles, colors);
@@ -177,8 +178,8 @@ public class GuiController {
             // Триангуляция и расчёт нормалей
             triangulatedModel.triangulate();
             triangulatedModel.normalize();
-            modelManager.addModel(triangulatedModel);
-            modelManager.setActiveModel(triangulatedModel);
+            models.add(triangulatedModel);
+            curModel = triangulatedModel;
             addModelButtons();
         } catch (IOException exception) {
             showError("Ошибка чтения файла", "Не удалось прочитать файл"+ exception.getMessage());
@@ -195,11 +196,10 @@ public class GuiController {
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Объектные файлы", "*.obj"));
         File file = fileChooser.showSaveDialog(null);
 
-        if (modelManager.getActiveModel()!=null) {
+        if (models != null) {
             if (file != null) {
                 String filename = file.getAbsolutePath();
-                // Создаем экземпляр ObjWriterClass для записи модели
-                ObjWriter.write(modelManager.getActiveModel(), filename);  // Сохраняем модель
+                ObjWriter.write(curModel, filename);  // Сохраняем модель
 
                 System.out.println("Модель сохранена в файл: " + filename);
             } else {
@@ -248,19 +248,18 @@ public class GuiController {
             boolean flag2 = askForFlag("Удалять текстурные вершины?");
             // Создаем экземпляр DeleteVertex для удаления вершин
 
-            DeleteVertex.deleteVertex(modelManager.getActiveModel(),verticesToDelete,flag1,flag2) ;
-            // Удаляем вершины
+            DeleteVertex.deleteVertex(curModel, verticesToDelete, flag1, flag2);
             activeModelnull();
         } else {
-            showError("Ошибка", "Вы не ввели ни одной вершины.");
+            showError("404", "Введите индексы вершин.");
         }
     }
-    private void activeModelnull(){
-        if(modelManager.getActiveModel().getVertices().isEmpty()){
-            System.out.println(1);
-            modelManager.delModels(modelManager.getActiveModel());
-            if (!modelManager.getModels().isEmpty()){
-                modelManager.setActiveModel(modelManager.getModels().get(modelManager.getModels().size()-1));
+
+    private void activeModelnull() {
+        if (curModel.getVertices().isEmpty()) {
+            models.remove(curModel);
+            if (!models.isEmpty()) {
+                curModel = models.get(models.size() - 1);
             }
         }
     }
@@ -298,7 +297,7 @@ public class GuiController {
 
         if (!result.isEmpty()) {
             try {
-                modelManager.setActiveModel(modelManager.getModels().get(Integer.parseInt(result)-1));
+                curModel = models.get(Integer.parseInt(result) - 1);
             } catch (NumberFormatException e) {
                 showError("Ошибка ввода", "Элемент не является целым числом.");
             }
@@ -309,12 +308,11 @@ public class GuiController {
     }
 
     public void DeleteModel(ActionEvent actionEvent) {
-        modelManager.delModels(modelManager.getActiveModel());
-        if (!modelManager.getModels().isEmpty()){
-            modelManager.setActiveModel(modelManager.getModels().get(modelManager.getModels().size()-1));
-        }
-        else{
-            modelManager.setActiveModel(null);
+        models.remove(curModel);
+        if (!models.isEmpty()) {
+            curModel = models.get(models.size() - 1);
+        } else {
+            curModel = null;
         }
     }
 
@@ -323,15 +321,15 @@ public class GuiController {
 
     public void texture(ActionEvent actionEvent) {
 
-        if(!modelManager.getActiveModel().isActiveTexture){
-            modelManager.getActiveModel().pathTexture = texturePathPopup((Stage) canvas.getScene().getWindow());
+        if(!curModel.isActiveTexture){
+           curModel.pathTexture = texturePathPopup((Stage) canvas.getScene().getWindow());
         }
         toggleTexture();
-        System.out.println(modelManager.getActiveModel().pathTexture);
+        System.out.println(curModel.pathTexture);
     }
 
     public void toggleTexture(){
-        modelManager.getActiveModel().isActiveTexture = !modelManager.getActiveModel().isActiveTexture;
+        curModel.isActiveTexture = !curModel.isActiveTexture;
     }
 
     public static String texturePathPopup(Stage stage) {
@@ -470,10 +468,7 @@ public class GuiController {
         }
     }
 
-    public void setActiveModel(int index){
-
-        modelManager.setActiveModel(modelManager.getModels().get(index));
-    }
+    public void setActiveModel(int index){curModel = models.get(index);}
 
     public void handleColorPickerAction(){
         colors = new Color[]{colorPicker.getValue(), colorPicker.getValue(), colorPicker.getValue()}; //TODO aaaaaaaaaaaa
@@ -531,7 +526,7 @@ public class GuiController {
                     Double.parseDouble(Tx.getText()), Double.parseDouble(Ty.getText()), Double.parseDouble(Tz.getText()),
                     Double.parseDouble("0"), Double.parseDouble("0"), Double.parseDouble("0"),
                     Double.parseDouble(Sx.getText()), Double.parseDouble(Sy.getText()), Double.parseDouble(Sz.getText()));
-            TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
+            TranslationModel.move(transposeMatrix, curModel);
             Tx.setText("0");
             Ty.setText("0");
             Tz.setText("0");
@@ -541,37 +536,36 @@ public class GuiController {
         }
     }
 
-    //быстрые кнопочки для наташи
 
     //кнопочка перенести в начало координат
     public void MoveToTheOrigin(ActionEvent actionEvent) {
-        Vector3f center = modelManager.getActiveModel().getCenter().multiplied(-1);
+        Vector3f center = curModel.getCenter().multiplied(-1);
         Matrix4f transposeMatrix = ModelTransformer.translateMatrix(center.getX(), center.getY(), center.getZ());
-        TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
+        TranslationModel.move(transposeMatrix, curModel);
     }
 
     public void Rotate90x(ActionEvent actionEvent) {
         Matrix4f transposeMatrix = ModelTransformer.rotateMatrix(90, 0, 0);
-        TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
+        TranslationModel.move(transposeMatrix, curModel);
     }
 
     public void Rotate90y(ActionEvent actionEvent) {
         Matrix4f transposeMatrix = ModelTransformer.rotateMatrix(0, 90, 0);
-        TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
+        TranslationModel.move(transposeMatrix, curModel);
     }
 
     public void Rotate90z(ActionEvent actionEvent) {
         Matrix4f transposeMatrix = ModelTransformer.rotateMatrix(0, 0, 90);
-        TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
+        TranslationModel.move(transposeMatrix, curModel);
     }
     //Увеличить в 2 раза
     public void increase2(ActionEvent actionEvent) {
         Matrix4f transposeMatrix = ModelTransformer.scaleMatrix(2, 2, 2);
-        TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
+        TranslationModel.move(transposeMatrix, curModel);
     }
     //Уменьшить в 2 раза
     public void reduce2(ActionEvent actionEvent) {
         Matrix4f transposeMatrix = ModelTransformer.scaleMatrix(0.5, 0.5, 0.5);
-        TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
+        TranslationModel.move(transposeMatrix, curModel);
     }
 }

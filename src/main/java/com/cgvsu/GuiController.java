@@ -447,15 +447,10 @@ public class GuiController {
         addButton.setLayoutX(20);
         addedButtonsModel.add(addButton);
 
-        Button deleteButton = new Button("Удалить");
-        deleteButton.setLayoutY(addedButtonsModel.get(addedButtonsModel.size() - 1).getLayoutY());
-        deleteButton.setLayoutX(addedButtonsModel.get(addedButtonsModel.size() - 1).getLayoutX() + 85);
-        deletedButtonsModel.add(deleteButton);
-
 
 
         modelPane.getChildren().add(addButton);
-        modelPane.getChildren().add(deleteButton);
+
 
         addButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override

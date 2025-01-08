@@ -26,6 +26,7 @@ public class TEST {
 
         SquareMatrix q1 = new SquareMatrix(5, c1);
         SquareMatrix q2 = new SquareMatrix(5, c2);
+        //q1.transpose(); тут все плюшки для матриц найдешь маш
         System.out.println("Матрица 1");
         q1.print();
         System.out.println("Матрица 2");

@@ -1,24 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.canvas.Canvas?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.CheckMenuItem?>
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.input.KeyCodeCombination?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.text.Text?>
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.input.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.control.ColorPicker?>
-<AnchorPane fx:id="anchorPane" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.cgvsu.GuiController">
-    <MenuBar>
+<AnchorPane fx:id="anchorPane" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.cgvsu.GuiController">
+    <MenuBar AnchorPane.rightAnchor="0.0">
         <Menu mnemonicParsing="false" text="File">
             <MenuItem mnemonicParsing="false" onAction="#onOpenModelMenuItemClick" text="Load Model">
             <accelerator>
@@ -30,11 +19,14 @@
                     <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                 </accelerator>
             </MenuItem>
-            <MenuItem mnemonicParsing="false" onAction="#loadTexture" text="Load Textures">
-            </MenuItem>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Camera Options">
+            <!--удалила тут случайно комментарий-->
         </Menu>
         <Menu mnemonicParsing="false" text="Change the model">
             <MenuItem mnemonicParsing="false" onAction="#delvertex" text="Delete vertices">
+            </MenuItem>
+            <MenuItem mnemonicParsing="false" text="Delete polygon">
             </MenuItem>
         </Menu>
         <Menu mnemonicParsing="false" text="Model">
@@ -45,23 +37,24 @@
         </Menu>
         <Menu mnemonicParsing="false" text="Render Properties">
             <CheckMenuItem mnemonicParsing="false" onAction="#togglePolygonalGrid" text="Сетка" />
-            <CheckMenuItem mnemonicParsing="false" onAction="#toggleTriangleFill" text="Заливка полигонов" selected="true" />
-            <CheckMenuItem mnemonicParsing="false" onAction="#lightning" text="Освещение" selected="true" />
+            <CheckMenuItem mnemonicParsing="false" onAction="#toggleTriangleFill" selected="true" text="Заливка полигонов" />
+            <CheckMenuItem mnemonicParsing="false" onAction="#lightning" selected="true" text="Освещение" />
             <CheckMenuItem mnemonicParsing="false" onAction="#texture" text="Текстура" />
         </Menu>
     </MenuBar>
 
 
     <Canvas fx:id="canvas" height="870" onScroll="#mouseCameraZoom" width="1600" AnchorPane.topAnchor="30.0" />
-    <TabPane fx:id="settingsTab" prefWidth="325.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+    <TabPane fx:id="settingsTab" nodeOrientation="RIGHT_TO_LEFT" prefWidth="325.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
      <tabs>
          <Tab text="Модели">
              <content>
-                 <AnchorPane minHeight="0.0" minWidth="0.0">
+                 <AnchorPane minHeight="0.0" minWidth="0.0" nodeOrientation="LEFT_TO_RIGHT">
                      <children>
-                         <ScrollPane prefHeight="315.0" prefWidth="288.0" layoutX="19.0" layoutY="26.0">
+                         <ScrollPane layoutX="19.0" layoutY="26.0" prefHeight="315.0" prefWidth="288.0">
                              <content>
-                                 <AnchorPane fx:id="modelPane" minHeight="0.0" minWidth="0.0" prefHeight="1000.0" prefWidth="285.0" />
+                                 <AnchorPane fx:id="modelPane" minHeight="0.0" minWidth="0.0" />
                              </content>
                          </ScrollPane>
 
@@ -69,23 +62,23 @@
                              <Text fill="WHITE" text="Перемещение" />
                              <HBox alignment="CENTER" spacing="10.0">
                                  <Text fill="WHITE" text="X:" />
-                                 <TextField fx:id="Tx" prefWidth="70.0" text="0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;" />
+                                 <TextField fx:id="Tx" prefWidth="70.0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;" text="0" />
                                  <Text fill="WHITE" text="Y:" />
-                                 <TextField fx:id="Ty" prefWidth="70.0" text="0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;"/>
+                                 <TextField fx:id="Ty" prefWidth="70.0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;" text="0" />
                                  <Text fill="WHITE" text="Z:" />
-                                 <TextField fx:id="Tz" prefWidth="70.0" text="0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;"/>
+                                 <TextField fx:id="Tz" prefWidth="70.0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;" text="0" />
                              </HBox>
 
                              <Text fill="WHITE" text="Масштаб" />
                              <HBox alignment="CENTER" spacing="10.0" style="-fx-padding: 0 0 20 0;">
                                  <Text fill="WHITE" text="X:" />
-                                 <TextField fx:id="Sx" prefWidth="70.0" text="1" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;"/>
+                                 <TextField fx:id="Sx" prefWidth="70.0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;" text="1" />
                                  <Text fill="WHITE" text="Y:" />
-                                 <TextField fx:id="Sy" prefWidth="70.0" text="1" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;"/>
+                                 <TextField fx:id="Sy" prefWidth="70.0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;" text="1" />
                                  <Text fill="WHITE" text="Z:" />
-                                 <TextField fx:id="Sz" prefWidth="70.0" text="1" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;"/>
+                                 <TextField fx:id="Sz" prefWidth="70.0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;" text="1" />
                              </HBox>
-                         <Button fx:id="convert" mnemonicParsing="false" onMouseClicked="#convert" text="Преобразить" style="-fx-font-size: 14px; -fx-background-radius: 15; -fx-border-radius: 15;"/>
+                         <Button fx:id="convert" mnemonicParsing="false" onMouseClicked="#convert" style="-fx-font-size: 14px; -fx-background-radius: 15; -fx-border-radius: 15;" text="Преобразить" />
                          </VBox>
                      </children>
                  </AnchorPane>
@@ -96,7 +89,7 @@
 
          <Tab text="Камеры">
          <content>
-           <AnchorPane fx:id="cameraPane" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+           <AnchorPane fx:id="cameraPane" minHeight="0.0" minWidth="0.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="180.0" prefWidth="200.0">
                   <children>
                      <Button layoutX="22.0" layoutY="14.0" mnemonicParsing="false" onMouseClicked="#createCamera" text="Добавить камеру" />
                      <TextField fx:id="eyeX" layoutX="50.0" layoutY="80.0" prefHeight="25.0" prefWidth="93.0" text="0" />
@@ -118,9 +111,9 @@
        </Tab>
          <Tab text="Цвет">
              <content>
-                 <AnchorPane fx:id="colorPane" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                 <AnchorPane fx:id="colorPane" minHeight="0.0" minWidth="0.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="180.0" prefWidth="325.0">
                      <children>
-                         <VBox alignment="CENTER" spacing="10.0" layoutX="20.0" layoutY="30.0">
+                         <VBox alignment="CENTER" layoutX="20.0" layoutY="30.0" prefWidth="285.0" spacing="10.0" styleClass="vbox-custom">
                              <Text fill="WHITE" text="Выберите цвет" />
                              <ColorPicker fx:id="colorPicker" onAction="#handleColorPickerAction" />
                          </VBox>
@@ -131,5 +124,5 @@
 
      </tabs>
    </TabPane>
-    <Button fx:id="showSettingsButton" layoutX="1245.0" layoutY="-6.0" mnemonicParsing="false" onAction="#toggleSettings" prefHeight="900.0" prefWidth="30.0" style="-fx-shape: &quot;M 0 0 L 0 -1 M 0 -1 L 1 -1 L 1 0 L 0 0&quot;; -fx-background-color: #212121; -fx-border-style: solid; -fx-border-color: #212121;" text="&gt;" AnchorPane.bottomAnchor="6.0" AnchorPane.rightAnchor="325.0" AnchorPane.topAnchor="-6.0" />
+    <Button fx:id="showSettingsButton" layoutX="1245.0" layoutY="-6.0" mnemonicParsing="false" onAction="#toggleSettings" prefHeight="900.0" prefWidth="30.0" style="-fx-shape: &quot;M 0 0 L 0 -1 M 0 -1 L 1 -1 L 1 0 L 0 0&quot;; -fx-background-color: #aeaeeb;" text="&lt;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="325.0" AnchorPane.topAnchor="0.0" />
 </AnchorPane>

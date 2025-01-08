@@ -6,7 +6,7 @@ import com.cgvsu.math.typesVectors.Vector3f;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.paint.Color;
-
+//КАКАЯ ТО ПРОБЛЕМА С ЗЕД БУФЕРОМ ПОЫЧВИЛАСЬ МАША НАДО ИСПАВИТЬ ПОТОМ ИЛИ ВЫ РЕБЯТ.
 public class Rasterization {
 
     public static void fillTriangle(
@@ -24,7 +24,7 @@ public class Rasterization {
             Vector3f[] normals) {
 
         final PixelWriter pixelWriter = graphicsContext.getPixelWriter();
-        // Сортировка вершин треугольника по Y
+
         sort(arrX, arrY, arrZ, normals, textures, colors);
 
         for (int y = arrY[0]; y <= arrY[1]; y++) {
@@ -89,12 +89,12 @@ public class Rasterization {
                         if ((barizenticCoordinate[0] < 0.01 || barizenticCoordinate[1] < 0.01 || barizenticCoordinate[2] < 0.01) & polyGrid) {
                             pixelWriter.setColor(x, y, Color.WHITE);
                             continue;
-                        } else if (!fillTriangles) { // Пропуск заливки, если выключено
-                            continue;
-                        } else if (mesh.isActiveTexture) { // Использование текстуры
+                        } else if (!fillTriangles) {
+                            continue; // Skip filling if the flag is false
+                        } else if (mesh.isActiveTexture) {
                             texture(barizenticCoordinate, textures, mesh, rgb);
                         }
-                        if (mesh.isActiveLighting){ // Применение освещения
+                        if (mesh.isActiveLighting){
                             light(barizenticCoordinate, normals, light, rgb);
                         }
                         pixelWriter.setColor(x, y,  Color.rgb(rgb[0], rgb[1], rgb[2]));
@@ -105,13 +105,13 @@ public class Rasterization {
 
 
     }
-    // Вычисление детерминанта матрицы
+
     private static double determinator(int[][] arr) {
         return arr[0][0] * arr[1][1] * arr[2][2] + arr[1][0] * arr[0][2] * arr[2][1] +
                 arr[0][1] * arr[1][2] * arr[2][0] - arr[0][2] * arr[1][1] * arr[2][0] -
                 arr[0][0] * arr[1][2] * arr[2][1] - arr[0][1] * arr[1][0] * arr[2][2];
     }
-    // Вычисление барицентрических координат
+
     private static double[] barizentricCalculator(int x, int y, int[] arrX, int[] arrY){
         final double generalDeterminant = determinator(new int[][]{arrX, arrY, new int[]{1, 1, 1}});
         final double coordinate0 = Math.abs(determinator(
@@ -125,7 +125,7 @@ public class Rasterization {
                 generalDeterminant);
         return new double[]{coordinate0, coordinate1, coordinate2};
     }
-    // Интерполяция RGB-цветов на основе барицентрических координат
+
     public static int[] getGradientCoordinatesRGB(final double[] baristicCoords, final Color[] color) {
         int r = Math.min(255, (int) Math.abs(color[0].getRed() * 255 * baristicCoords[0] + color[1].getRed()
                 * 255 * baristicCoords[1] + color[2].getRed() * 255 * baristicCoords[2]));
@@ -136,7 +136,7 @@ public class Rasterization {
 
         return new int[]{r, g, b};
     }
-    // Сортировка вершин по Y-координате
+
     private static void sort(int[] x, int[] y, double[] z, Vector3f[] n, Vector2f[] t, Color[] c) {
         if (y[0] > y[1]) {
             swap(x, y, z, c, n, t, 0, 1);
@@ -148,7 +148,7 @@ public class Rasterization {
             swap(x, y, z, c, n, t, 0, 1);
         }
     }
-    // Обмен значениями между двумя вершинами
+
     private static void swap(int[] x, int[] y, double[] z, Color[] c, Vector3f[] n, Vector2f[] t, int i, int j) {
         int tempY = y[i];
         int tempX = x[i];
@@ -169,12 +169,12 @@ public class Rasterization {
         n[j] = tempN;
         t[j] = tempT;
     }
-    // Вычисляет координаты текстуры на основе барицентрических координат.
+
     public static double[] getGradientCoordinatesTexture(double[] barizentric, Vector2f[] texture) {
         return new double[] {(barizentric[0] * texture[0].getX()) +  (barizentric[1] * texture[1].getX()) +  (barizentric[2] * texture[2].getX()),
                 (barizentric[0] * texture[0].getX()) + (barizentric[1] * texture[1].getY()) + (barizentric[2] * texture[2].getY())};
     }
-    // Применяет текстуру к пикселю.
+
     public static void texture(double[] barizentric, Vector2f[] textures, Model mesh, int[] rgb){
         double[] texture = getGradientCoordinatesTexture(barizentric, textures);
         int u = (int) Math.round(texture[0] * (mesh.texture.wight - 1));
@@ -185,26 +185,24 @@ public class Rasterization {
             rgb[2] = mesh.texture.pixelData[u][v][2];
         }
     }
-    // Рассчитывает освещение пикселя.
     public static void calculateLight(int[] rgb, double[] light, Vector3f normal){
         double k = 0.5;
         double l = -(light[0] * normal.getX() + light[1] * normal.getY() + light[2] * normal.getZ());
         if(l < 0){
             l = 0;
         }
-        rgb[0] = Math.min(255, (int) (rgb[0] * (1 - k) + rgb[0] * k * l)); // Освещение красного канала
-        rgb[1] = Math.min(255, (int) (rgb[1] * (1 - k) + rgb[1] * k * l)); // Освещение зеленого канала
-        rgb[2] = Math.min(255, (int) (rgb[2] * (1 - k) + rgb[2] * k * l)); // Освещение синего канала
+        rgb[0] = Math.min(255, (int) (rgb[0] * (1 - k) + rgb[0] * k * l));
+        rgb[1] = Math.min(255, (int) (rgb[1] * (1 - k) + rgb[1] * k * l));
+        rgb[2] = Math.min(255, (int) (rgb[2] * (1 - k) + rgb[2] * k * l));
     }
-    // Интерполирует нормали для плавного освещения.
     public static Vector3f smoothingNormal(final double[] baristicCoords, final Vector3f[] normals) {
         return new Vector3f((float) (baristicCoords[0] * normals[0].getX() + baristicCoords[1] * normals[1].getX() + baristicCoords[2] * normals[2].getX()),
                 (float) (baristicCoords[0] * normals[0].getY() + baristicCoords[1] * normals[1].getY() + baristicCoords[2] * normals[2].getY()),
                 (float) (baristicCoords[0] * normals[0].getZ() + baristicCoords[1] * normals[1].getZ() + baristicCoords[2] * normals[2].getZ()));
     }
-    // Выполняет финальный расчет освещения.
+
     public static void light(final double[] barizentric, final Vector3f[] normals, double[] light, int[] rgb){
-        Vector3f smooth = smoothingNormal(barizentric, normals); // Интерполированная нормаль
+        Vector3f smooth = smoothingNormal(barizentric, normals);
         calculateLight(rgb, light, smooth);
     }
 }

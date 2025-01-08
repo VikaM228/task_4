@@ -1,22 +1,22 @@
 package com.cgvsu.math;
 
-
+//аффинные преобрзования
 import com.cgvsu.math.typesMatrix.Matrix4f;
 import com.cgvsu.math.typesVectors.Vector3f;
 import com.cgvsu.math.typesVectors.Vector4f;
 import com.cgvsu.model.Model;
 
 import java.util.ArrayList;
-//класс афинных преобразований для того чтобы мы могли изменять модели по XYZ
 
 public class ATTransformator {
 
     private Matrix4f transformationMatrix;
 
+    //конструктор
     private ATTransformator(Matrix4f transformationMatrix) {
         this.transformationMatrix = new Matrix4f(transformationMatrix.getBase());
     }
-
+    //применяем к векторам наши функции с изменениями
     public Vector3f applyTransformationToVector(Vector3f vector) {
         Vector4f fourVector = new Vector4f(vector.getX(), vector.getY(), vector.getZ(), 1);
         Vector4f transformedVector = transformationMatrix.multiplied(fourVector);
@@ -33,7 +33,7 @@ public class ATTransformator {
             transformedVectorList.add(applyTransformationToVector(vector));
         }
         return transformedVectorList;
-    }
+    } //практик сказал добавить
 
     public Model applyTransformationToModel(Model originalModel) {
         Model transformedModel = new Model();
@@ -47,7 +47,7 @@ public class ATTransformator {
         transformedModel.polygons.addAll(originalModel.polygons);
 
         return transformedModel;
-    }
+    } //практик сказал добавить
 
     public static class ATBuilder {
         private Matrix4f currentMatrix;
@@ -55,7 +55,7 @@ public class ATTransformator {
         public ATBuilder() {
             this.currentMatrix = new Matrix4f(true);
         }
-
+        //масштабирование
         private ATBuilder scale(double sX, double sY, double sZ) {
             Matrix4f scaleMatrix = new Matrix4f(new double[][]{
                     {sX, 0, 0, 0},
@@ -66,7 +66,7 @@ public class ATTransformator {
             this.currentMatrix = this.currentMatrix.multiplied(scaleMatrix);
             return this;
         }
-
+        //повороты по всем осям
         private ATBuilder rotateX(double rX) {
             double cosX = Math.cos(Math.toRadians(rX));
             double sinX = Math.sin(Math.toRadians(rX));
@@ -108,7 +108,7 @@ public class ATTransformator {
             this.currentMatrix = this.currentMatrix.multiplied(rotationMatrix);
             return this;
         }
-
+        //Параллельным переносом (translation) в методичке см стр 55
         private ATBuilder translate(double tX, double tY, double tZ) {
             Matrix4f translationMatrix = new Matrix4f(new double[][]{
                     {1, 0, 0, tX},

@@ -4,10 +4,18 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.Objects;
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;  // Используем javafx.scene.control.Label
+import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 public class Simple3DViewer extends Application {
 
@@ -19,11 +27,11 @@ public class Simple3DViewer extends Application {
 
 
         Scene scene = new Scene(viewport);
-        stage.setMinWidth(1600);
-        stage.setMinHeight(900);
+        stage.setMinWidth(1400);
+        stage.setMinHeight(800);
         viewport.prefWidthProperty().bind(scene.widthProperty());
         viewport.prefHeightProperty().bind(scene.heightProperty());
-        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/dark-theme.css").toExternalForm());
 
 
         stage.setTitle("3DViewer");

@@ -50,7 +50,7 @@ public class RenderEngine {
                 // Получаем вершину
                 Vector3f vertex = mesh.vertices.get(mesh.polygons.get(polygonInd).getVertexIndices().get(vertexInPolygonInd));
                 normals[vertexInPolygonInd] = (mesh.normals.get(mesh.polygons.get(polygonInd).getVertexIndices().get(vertexInPolygonInd)));
-                if (mesh.pathTexture != null) {
+                if (mesh.pathTexture != null) { //TODO: ВАЖНО
                     textures[vertexInPolygonInd] = (mesh.textureVertices.get(mesh.polygons.get(polygonInd).getTextureVertexIndices().get(vertexInPolygonInd)));
                 }
                 Vector3f transformedVertex = multiplyMatrix4ByVector3(modelViewProjectionMatrix, vertex);
@@ -65,19 +65,9 @@ public class RenderEngine {
             int[] arrX = {(int) resultPoints.get(0).getX(), (int) resultPoints.get(1).getX(), (int) resultPoints.get(2).getX()};
             int[] arrY = {(int) resultPoints.get(0).getY(), (int) resultPoints.get(1).getY(), (int) resultPoints.get(2).getY()};
             double[] arrZ = {arrayZ.get(0), arrayZ.get(1), arrayZ.get(2)};
-            // Массив light содержащий направление света
+
             double[] light = new double[]{viewMatrix.get(0, 2), viewMatrix.get(1, 2), viewMatrix.get(2, 2)};
-            // растеризация и освещение с учетом света и нормалей
             Rasterization.fillTriangle(graphicsContext, arrX, arrY, arrZ, colors, zBuffer, polyGrid, fillTriangles, mesh, textures, light, normals);
         }
     }
-    public void updateTexture(Model model) {
-        if (model.pathTexture != null) {
-            if (model.texture == null) {
-                model.texture = new Texture();
-            }
-            model.texture.loadImage(model.pathTexture);
-        }
-    }
-
 }

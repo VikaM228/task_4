@@ -91,6 +91,3 @@ logs/
 # Temporary Files
 *.temp
 *.backup
-
-# Project exclude paths
-/target/

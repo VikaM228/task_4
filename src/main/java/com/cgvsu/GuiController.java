@@ -1,11 +1,11 @@
 package com.cgvsu;
 
+import com.cgvsu.SetModels.ModelManager;
 import com.cgvsu.deletevertex.DeleteVertex;
 import com.cgvsu.math.typesMatrix.Matrix4f;
 import com.cgvsu.math.typesVectors.Vector3f;
 import com.cgvsu.model.Model;
 import com.cgvsu.model.ModelTransformer;
-import com.cgvsu.model.Polygon;
 import com.cgvsu.model.TranslationModel;
 import com.cgvsu.objreader.ObjReader;
 import com.cgvsu.objreader.ObjWriter;
@@ -18,13 +18,11 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -46,7 +44,9 @@ public class GuiController {
     final private float TRANSLATION = 0.5F;
 
 
+
     //Поля для управления мышкой
+
     private double startX;
     private double startY;
 
@@ -64,8 +64,13 @@ public class GuiController {
     @FXML
     private Button showSettingsButton;
 
+    private Model oldModel = null;
+
     private Model triangulatedModel = null;
-    private AnchorPane viewport;
+
+    private boolean triangulated = false;
+
+    private ModelManager modelManager = new ModelManager();
 
     private boolean polyGrid = false;
     private boolean fillTriangles = true;
@@ -98,6 +103,7 @@ public class GuiController {
     public Button convert;
 
 
+
     //для добавления камеры
     public TextField eyeX;
     public TextField targetX;
@@ -107,18 +113,16 @@ public class GuiController {
     public TextField targetZ;
 
 
+
     private List<Camera> camerasList = new ArrayList<>();
     private Camera curCamera;
-
-    private List<Model> models = new ArrayList<>();
-    private Model curModel;
 
 
     @FXML
     private void initialize() {
         anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> canvas.setWidth(newValue.doubleValue()));
         anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> canvas.setHeight(newValue.doubleValue()));
-        viewport = new AnchorPane();
+
         timeline = new Timeline();
         timeline.setCycleCount(Animation.INDEFINITE);
         addNewCamera(new Vector3f(0, 0, 100), new Vector3f(0, 0, 0));
@@ -139,8 +143,8 @@ public class GuiController {
             canvas.setOnMouseDragged(this::handleMouseDragged);
             canvas.setOnScroll(this::mouseCameraZoom);
 
-            if (models != null) {
-                for (Model model : models) {
+            if (modelManager != null) {
+                for (Model model: modelManager.getModels()) {
                     canvas.getGraphicsContext2D().setStroke(Color.WHITE);
                     RenderEngine.render(canvas.getGraphicsContext2D(), curCamera, model, (int) width, (int) height,
                             zBuffer, polyGrid, fillTriangles, colors);
@@ -168,38 +172,45 @@ public class GuiController {
 
         try {
             String fileContent = Files.readString(fileName);
+            oldModel = ObjReader.read(fileContent);
             triangulatedModel = ObjReader.read(fileContent);
             // Триангуляция и расчёт нормалей
             triangulatedModel.triangulate();
             triangulatedModel.normalize();
-            models.add(triangulatedModel);
-            curModel = triangulatedModel;
+            modelManager.addModel(triangulatedModel);
+            modelManager.setActiveModel(triangulatedModel);
             addModelButtons();
         } catch (IOException exception) {
-            showError("404", "Ошибка в чтении файла" + exception.getMessage());
-        } catch (Exception exception) {
-            showError("404", "Произошел какой-то сбой" + exception.getMessage());
+            showError("Ошибка чтения файла", "Не удалось прочитать файл"+ exception.getMessage());
+        } /*catch (InvalidFileFormatException exception) {
+            showError("Некорректный файл", "Файл имеет неправильный формат"+ exception.getMessage());
+        }*/
+        catch (Exception exception) {
+            showError("Неизвестная ошибка", "Произошла неизвестная ошибка" + exception.getMessage());
         }
     }
-
     @FXML
-    public void saveModel() {
+    public void saveModel(){
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Объектные файлы", "*.obj"));
         File file = fileChooser.showSaveDialog(null);
 
-        if (models != null) {
+        if (modelManager.getActiveModel()!=null) {
             if (file != null) {
                 String filename = file.getAbsolutePath();
-                ObjWriter.write(curModel, filename);
+                // Создаем экземпляр ObjWriterClass для записи модели
+                ObjWriter.write(modelManager.getActiveModel(), filename);  // Сохраняем модель
 
                 System.out.println("Модель сохранена в файл: " + filename);
+            } else {
+                showError("Ошибка сохранения", "Введите имя");
             }
-        } else {
-            showError("404", "Не удалось сохранить. Модель не найдена");
+        }
+        else {
+            showError("Ошибка сохранения", "Нет модели");
         }
     }
-
+    // Метод для отображения сообщения об ошибке
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -209,52 +220,59 @@ public class GuiController {
     }
 
     @FXML
-    public void delvertex(ActionEvent actionEvent) {
+    public void delvertex(ActionEvent actionEvent){
+        // Создаем диалог для ввода списка вершин
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Удалить вершины");
         dialog.setHeaderText("Введите ID вершин для удаления (через запятую):");
         dialog.setContentText("Вершины:");
 
+        // Отображаем диалог и ждем ответа
         String result = dialog.showAndWait().orElse("");
 
         if (!result.isEmpty()) {
+            // Разделяем введенные данные на список вершин и удаляем лишние пробелы
             String[] verticesArray = result.split(",");
             List<Integer> verticesToDelete = new ArrayList<>();
 
-
+            // Преобразуем строки в целые числа и добавляем в список
             for (String vertexStr : verticesArray) {
                 try {
-                    verticesToDelete.add(Integer.parseInt(vertexStr.trim()));
+                    verticesToDelete.add(Integer.parseInt(vertexStr.trim())); // парсим строку в Integer
                 } catch (NumberFormatException e) {
-                    showError("404", "Некоторые элементы не являются целыми числами.");
-                    return;
+                    showError("Ошибка ввода", "Некоторые элементы не являются целыми числами.");
+                    return; // Выход из метода, если был неправильный ввод
                 }
             }
             boolean flag1 = askForFlag("Удалять нормали?");
             boolean flag2 = askForFlag("Удалять текстурные вершины?");
-            DeleteVertex.deleteVertex(curModel, verticesToDelete, flag1, flag2);
+            // Создаем экземпляр DeleteVertex для удаления вершин
+
+            DeleteVertex.deleteVertex(modelManager.getActiveModel(),verticesToDelete,flag1,flag2) ;
+            // Удаляем вершины
             activeModelnull();
         } else {
-            showError("404", "Введите индексы вершин.");
+            showError("Ошибка", "Вы не ввели ни одной вершины.");
         }
     }
-
-    private void activeModelnull() {
-        if (curModel.getVertices().isEmpty()) {
-            models.remove(curModel);
-            if (!models.isEmpty()) {
-                curModel = models.get(models.size() - 1);
+    private void activeModelnull(){
+        if(modelManager.getActiveModel().getVertices().isEmpty()){
+            System.out.println(1);
+            modelManager.delModels(modelManager.getActiveModel());
+            if (!modelManager.getModels().isEmpty()){
+                modelManager.setActiveModel(modelManager.getModels().get(modelManager.getModels().size()-1));
             }
         }
     }
-
     // Метод для запроса флажка true/false для каждой вершины
     private boolean askForFlag(String headerText) {
+        // Создаем диалог для ввода флажка (true/false)
         ChoiceDialog<String> dialog = new ChoiceDialog<>("Да", "Да", "Нет");
         dialog.setTitle("Выбор флажка");
         dialog.setHeaderText(headerText);
         dialog.setContentText("Выберите флажок:");
 
+        // Отображаем диалог и ждем ответа
         String result = dialog.showAndWait().orElse("false");
 
         return result.equals("true");
@@ -265,7 +283,7 @@ public class GuiController {
     }
 
     public void toggleTriangleFill(ActionEvent actionEvent) {
-        fillTriangles = !fillTriangles;
+         fillTriangles = !fillTriangles;
     }
 
 
@@ -280,107 +298,80 @@ public class GuiController {
 
         if (!result.isEmpty()) {
             try {
-                curModel = models.get(Integer.parseInt(result) - 1);
+                modelManager.setActiveModel(modelManager.getModels().get(Integer.parseInt(result)-1));
             } catch (NumberFormatException e) {
                 showError("Ошибка ввода", "Элемент не является целым числом.");
-            } catch (IndexOutOfBoundsException e) {
-                showError("Ошибка выбора модели", "Индекса такой модели нет");
+            }
+            catch (IndexOutOfBoundsException e){
+                showError("Ошибка выбора модели","Индекса такой модели нет");
             }
         }
     }
 
+    public void DeleteModel(ActionEvent actionEvent) {
+        modelManager.delModels(modelManager.getActiveModel());
+        if (!modelManager.getModels().isEmpty()){
+            modelManager.setActiveModel(modelManager.getModels().get(modelManager.getModels().size()-1));
+        }
+        else{
+            modelManager.setActiveModel(null);
+        }
+    }
 
     public void lightning(ActionEvent actionEvent) {
     }
 
     public void texture(ActionEvent actionEvent) {
-        // Шаг 1: Открытие окна выбора файла
+
+        if(!modelManager.getActiveModel().isActiveTexture){
+            modelManager.getActiveModel().pathTexture = texturePathPopup((Stage) canvas.getScene().getWindow());
+        }
+        toggleTexture();
+        System.out.println(modelManager.getActiveModel().pathTexture);
+    }
+
+    public void toggleTexture(){
+        modelManager.getActiveModel().isActiveTexture = !modelManager.getActiveModel().isActiveTexture;
+    }
+
+    public static String texturePathPopup(Stage stage) {
+        // Create a new FileChooser instance
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Выберите текстуру");
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Изображения", "*.png", "*.jpg", "*.jpeg")
-        );
-        File selectedFile = fileChooser.showOpenDialog(new Stage());
 
+        // Set the title of the FileChooser window
+        fileChooser.setTitle("Select Texture");
+
+        // Add filters for the file types you want to allow (e.g., image files)
+        FileChooser.ExtensionFilter imageFilter = new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.bmp");
+        fileChooser.getExtensionFilters().add(imageFilter);
+
+        // Open the file chooser dialog and get the selected file
+        File selectedFile = fileChooser.showOpenDialog(stage);
+
+        // Check if the user selected a file
         if (selectedFile != null) {
-            try {
-                // Шаг 2: Привязка текстуры к модели
-                curModel.pathTexture = selectedFile.getAbsolutePath(); // Сохраняем путь к текстуре
-
-                // Шаг 3: Загрузка текстуры через RenderEngine
-                RenderEngine renderEngine = new RenderEngine();
-                renderEngine.updateTexture(curModel); // Загрузка текстуры
-
-                // Шаг 4: Перерисовка модели с текстурой
-                updateView();
-            } catch (Exception e) {
-                showError("Ошибка загрузки текстуры", "Не удалось загрузить текстуру: " + e.getMessage());
-            }
-        }
-    }
-    private void updateView() {
-        try {
-            // Шаг 1: Убедиться, что viewport и curModel инициализированы
-            if (viewport == null) {
-                throw new IllegalStateException("Viewport не инициализирован.");
-            }
-            if (curModel == null) {
-                throw new IllegalStateException("Модель не загружена.");
-            }
-
-            // Очистка viewport
-            viewport.getChildren().clear();
-
-            // Шаг 2: Настройка Canvas
-            Canvas canvas = new Canvas(viewport.getWidth(), viewport.getHeight());
-            viewport.getChildren().add(canvas);
-            GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
-
-            // Шаг 3: Настройка камеры
-            Camera camera = new Camera(
-                    new Vector3f(0, 0, 5), // Позиция камеры
-                    new Vector3f(0, 0, 0), // Точка, на которую смотрит камера
-                    60,                    // Угол обзора
-                    (float) viewport.getWidth() / (float) viewport.getHeight(), // Соотношение сторон
-                    0.1f,                  // Ближняя плоскость отсечения
-                    100                    // Дальняя плоскость отсечения
-            );
-
-            // Шаг 4: Вызов RenderEngine для рендера модели
-            RenderEngine.render(
-                    graphicsContext,
-                    camera,
-                    curModel,
-                    (int) viewport.getWidth(),
-                    (int) viewport.getHeight(),
-                    new double[(int) viewport.getWidth()][(int) viewport.getHeight()], // Z-буфер
-                    true, // polyGrid - отображение полигонов
-                    true, // fillTriangles - закраска треугольников
-                    new javafx.scene.paint.Color[] {
-                            javafx.scene.paint.Color.WHITE, // Цвет для теста
-                            javafx.scene.paint.Color.GRAY,
-                            javafx.scene.paint.Color.LIGHTGRAY
-                    }
-            );
-        } catch (Exception e) {
-            showError("Ошибка отображения модели", "Не удалось отобразить модель: " + e.getMessage());
+            // Return the path of the selected file as a string
+            return selectedFile.getAbsolutePath();
+        } else {
+            // Return null if no file was selected
+            return null;
         }
     }
 
 
-
-    public void addNewCamera(Vector3f cameraPos, Vector3f targetPos) {
+    public void addNewCamera(Vector3f cameraPos, Vector3f targetPos){
         camerasList.add(new Camera(cameraPos, targetPos, 1.0F, 1, 0.01F, 100));
         curCamera = camerasList.get(camerasList.size() - 1);
 
     }
-
-    public void deleteCamera(int index) {
+    public void deleteCamera(int index){
+        // Предполагается что индекс у камер будет начинаться с 1
         index -= 1;
-        if (camerasList.size() == 1) {
+        if (camerasList.size() == 1){
             return;
         }
-        if (curCamera == camerasList.get(index)) {
+        if (curCamera == camerasList.get(index)){
+            // Марин это тебе место для обработки ошибок
             curCamera = camerasList.get(index - 1);
         }
         camerasList.remove(index);
@@ -389,7 +380,7 @@ public class GuiController {
         addedButtonsCamera.remove(index);
         deletedButtonsCamera.remove(index);
         index = 1;
-        for (Button button : addedButtonsCamera) {
+        for (Button button: addedButtonsCamera){
             button.setText("Камера " + index);
             if (index != 1) {
                 button.setLayoutY((!addedButtonsCamera.isEmpty()) ?
@@ -403,7 +394,7 @@ public class GuiController {
         }
     }
 
-    public void setCurCamera(int index) {
+    public void setCurCamera(int index){
         index -= 1;
         curCamera = camerasList.get(index);
     }
@@ -442,83 +433,54 @@ public class GuiController {
 
     public void toggleSettings(ActionEvent actionEvent) {
         settingsTab.setVisible(!settingsTab.isVisible());
-        String arrow = (settingsTab.isVisible()) ? ">" : "<";
+        String arrow = (settingsTab.isVisible()) ? "<" : ">";
         showSettingsButton.setText(arrow);
-        showSettingsButton.setTranslateX(325 - showSettingsButton.getTranslateX());
+        showSettingsButton.setTranslateX(-325 - showSettingsButton.getTranslateX());
     }
 
 
     public void addModelButtons() {
-        // Создаем кнопку добавления модели
         Button addButton = new Button("Модель " + (addedButtonsModel.size() + 1));
         addButton.setLayoutY((addedButtonsModel.size() > 0) ?
-                deletedButtonsModel.get(deletedButtonsModel.size() - 1).getLayoutY() + 50 :
+               deletedButtonsModel.get(deletedButtonsModel.size()-1).getLayoutY() + 50 :
                 20);
         addButton.setLayoutX(20);
         addedButtonsModel.add(addButton);
 
-        // Создаем кнопку удаления
         Button deleteButton = new Button("Удалить");
-        deleteButton.setLayoutY(addButton.getLayoutY());
-        deleteButton.setLayoutX(addButton.getLayoutX() + 85);
-
+        deleteButton.setLayoutY(addedButtonsModel.get(addedButtonsModel.size() - 1).getLayoutY());
+        deleteButton.setLayoutX(addedButtonsModel.get(addedButtonsModel.size() - 1).getLayoutX() + 85);
         deletedButtonsModel.add(deleteButton);
 
-        // Добавляем кнопки на панель
+
+
         modelPane.getChildren().add(addButton);
         modelPane.getChildren().add(deleteButton);
 
-        // Устанавливаем действие для кнопки добавления
         addButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
                 setActiveModel(addedButtonsModel.indexOf(addButton));
                 setActiveModelColor(addButton);
-            }
-        });
 
-        // Устанавливаем действие для кнопки удаления
-        deleteButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                int index = addedButtonsModel.indexOf(addButton);
-
-                if (index >= 0 && index < models.size()) {
-                    modelPane.getChildren().remove(models.get(index));
-                    models.remove(index);
-                }
-                // Удаляем кнопки из списков и из модели
-                modelPane.getChildren().remove(addButton);
-                modelPane.getChildren().remove(deleteButton);
-                addedButtonsModel.remove(addButton);
-                deletedButtonsModel.remove(deleteButton);
             }
         });
     }
 
-
-    public void DeleteModel(ActionEvent actionEvent) {
-        models.remove(curModel);
-        if (!models.isEmpty()) {
-            curModel = models.get(models.size() - 1);
-        } else {
-            curModel = null;
-        }
-    }
-
-    public void setActiveModelColor(Button addButton) {
+    public void setActiveModelColor(Button addButton){
         for (Button button : addedButtonsModel) {
-            if (button.equals(addButton)) button.setStyle("-fx-background-color: #6d7073");
+            if(button.equals(addButton)) button.setStyle("-fx-background-color: #6d7073");
             else button.setStyle("-fx-background-color: #4b4e50");
 
         }
     }
 
-    public void setActiveModel(int index) {
-        curModel = models.get(index);
+    public void setActiveModel(int index){
+
+        modelManager.setActiveModel(modelManager.getModels().get(index));
     }
 
-    public void handleColorPickerAction() {
+    public void handleColorPickerAction(){
         colors = new Color[]{colorPicker.getValue(), colorPicker.getValue(), colorPicker.getValue()}; //TODO aaaaaaaaaaaa
     }
 
@@ -548,12 +510,13 @@ public class GuiController {
         deletedButtonsCamera.add(deleteButton);
 
 
+
         cameraPane.getChildren().add(addButton);
         cameraPane.getChildren().add(deleteButton);
 
     }
 
-    //кнопочка добавит камеру
+    //кнопочка добавит камеру тут добавляется камера
     public void createCamera(MouseEvent mouseEvent) {
         Vector3f pos = new Vector3f(Float.parseFloat(eyeX.getText()),
                 Float.parseFloat(eyeY.getText()), Float.parseFloat(eyeZ.getText()));
@@ -563,18 +526,17 @@ public class GuiController {
         addNewCamera(pos, targetPos);
 
     }
-
     //кнопочка преобразовать тут её функция при нажатии //TODO добавить правильный выбор моделей
     public void convert(MouseEvent mouseEvent) {
         if (Objects.equals(Tx.getText(), "") || Objects.equals(Ty.getText(), "") || Objects.equals(Tz.getText(), "")
-                || Objects.equals(Sx.getText(), "") || Objects.equals(Sy.getText(), "") || Objects.equals(Sz.getText(), "")) {
-            showError("Ошибочка", "Введите данные!");
+        || Objects.equals(Sx.getText(), "") || Objects.equals(Sy.getText(), "") || Objects.equals(Sz.getText(), "")) {
+            showError("Ошибка", "Введите необходимые данные!");
         } else {
             Matrix4f transposeMatrix = ModelTransformer.modelMatrix(
                     Double.parseDouble(Tx.getText()), Double.parseDouble(Ty.getText()), Double.parseDouble(Tz.getText()),
                     Double.parseDouble("0"), Double.parseDouble("0"), Double.parseDouble("0"),
                     Double.parseDouble(Sx.getText()), Double.parseDouble(Sy.getText()), Double.parseDouble(Sz.getText()));
-            TranslationModel.move(transposeMatrix, curModel);
+            TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
             Tx.setText("0");
             Ty.setText("0");
             Tz.setText("0");
@@ -583,7 +545,38 @@ public class GuiController {
             Sz.setText("1");
         }
     }
-    @FXML
-    public void loadTexture(){
+
+    //быстрые кнопочки для наташи
+
+    //кнопочка перенести в начало координат
+    public void MoveToTheOrigin(ActionEvent actionEvent) {
+        Vector3f center = modelManager.getActiveModel().getCenter().multiplied(-1);
+        Matrix4f transposeMatrix = ModelTransformer.translateMatrix(center.getX(), center.getY(), center.getZ());
+        TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
+    }
+
+    public void Rotate90x(ActionEvent actionEvent) {
+        Matrix4f transposeMatrix = ModelTransformer.rotateMatrix(90, 0, 0);
+        TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
+    }
+
+    public void Rotate90y(ActionEvent actionEvent) {
+        Matrix4f transposeMatrix = ModelTransformer.rotateMatrix(0, 90, 0);
+        TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
+    }
+
+    public void Rotate90z(ActionEvent actionEvent) {
+        Matrix4f transposeMatrix = ModelTransformer.rotateMatrix(0, 0, 90);
+        TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
+    }
+    //Увеличить в 2 раза
+    public void increase2(ActionEvent actionEvent) {
+        Matrix4f transposeMatrix = ModelTransformer.scaleMatrix(2, 2, 2);
+        TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
+    }
+    //Уменьшить в 2 раза
+    public void reduce2(ActionEvent actionEvent) {
+        Matrix4f transposeMatrix = ModelTransformer.scaleMatrix(0.5, 0.5, 0.5);
+        TranslationModel.move(transposeMatrix, modelManager.getActiveModel());
     }
 }

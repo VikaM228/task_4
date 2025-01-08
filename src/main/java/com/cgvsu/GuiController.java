@@ -18,6 +18,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -64,7 +65,7 @@ public class GuiController {
     private Button showSettingsButton;
 
     private Model triangulatedModel = null;
-
+    private AnchorPane viewport;
 
     private boolean polyGrid = false;
     private boolean fillTriangles = true;
@@ -117,7 +118,7 @@ public class GuiController {
     private void initialize() {
         anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> canvas.setWidth(newValue.doubleValue()));
         anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> canvas.setHeight(newValue.doubleValue()));
-
+        viewport = new AnchorPane();
         timeline = new Timeline();
         timeline.setCycleCount(Animation.INDEFINITE);
         addNewCamera(new Vector3f(0, 0, 100), new Vector3f(0, 0, 0));
@@ -293,7 +294,80 @@ public class GuiController {
     }
 
     public void texture(ActionEvent actionEvent) {
+        // Шаг 1: Открытие окна выбора файла
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Выберите текстуру");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Изображения", "*.png", "*.jpg", "*.jpeg")
+        );
+        File selectedFile = fileChooser.showOpenDialog(new Stage());
+
+        if (selectedFile != null) {
+            try {
+                // Шаг 2: Привязка текстуры к модели
+                curModel.pathTexture = selectedFile.getAbsolutePath(); // Сохраняем путь к текстуре
+
+                // Шаг 3: Загрузка текстуры через RenderEngine
+                RenderEngine renderEngine = new RenderEngine();
+                renderEngine.updateTexture(curModel); // Загрузка текстуры
+
+                // Шаг 4: Перерисовка модели с текстурой
+                updateView();
+            } catch (Exception e) {
+                showError("Ошибка загрузки текстуры", "Не удалось загрузить текстуру: " + e.getMessage());
+            }
+        }
     }
+    private void updateView() {
+        try {
+            // Шаг 1: Убедиться, что viewport и curModel инициализированы
+            if (viewport == null) {
+                throw new IllegalStateException("Viewport не инициализирован.");
+            }
+            if (curModel == null) {
+                throw new IllegalStateException("Модель не загружена.");
+            }
+
+            // Очистка viewport
+            viewport.getChildren().clear();
+
+            // Шаг 2: Настройка Canvas
+            Canvas canvas = new Canvas(viewport.getWidth(), viewport.getHeight());
+            viewport.getChildren().add(canvas);
+            GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
+
+            // Шаг 3: Настройка камеры
+            Camera camera = new Camera(
+                    new Vector3f(0, 0, 5), // Позиция камеры
+                    new Vector3f(0, 0, 0), // Точка, на которую смотрит камера
+                    60,                    // Угол обзора
+                    (float) viewport.getWidth() / (float) viewport.getHeight(), // Соотношение сторон
+                    0.1f,                  // Ближняя плоскость отсечения
+                    100                    // Дальняя плоскость отсечения
+            );
+
+            // Шаг 4: Вызов RenderEngine для рендера модели
+            RenderEngine.render(
+                    graphicsContext,
+                    camera,
+                    curModel,
+                    (int) viewport.getWidth(),
+                    (int) viewport.getHeight(),
+                    new double[(int) viewport.getWidth()][(int) viewport.getHeight()], // Z-буфер
+                    true, // polyGrid - отображение полигонов
+                    true, // fillTriangles - закраска треугольников
+                    new javafx.scene.paint.Color[] {
+                            javafx.scene.paint.Color.WHITE, // Цвет для теста
+                            javafx.scene.paint.Color.GRAY,
+                            javafx.scene.paint.Color.LIGHTGRAY
+                    }
+            );
+        } catch (Exception e) {
+            showError("Ошибка отображения модели", "Не удалось отобразить модель: " + e.getMessage());
+        }
+    }
+
+
 
     public void addNewCamera(Vector3f cameraPos, Vector3f targetPos) {
         camerasList.add(new Camera(cameraPos, targetPos, 1.0F, 1, 0.01F, 100));

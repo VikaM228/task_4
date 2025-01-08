@@ -71,4 +71,13 @@ public class RenderEngine {
             Rasterization.fillTriangle(graphicsContext, arrX, arrY, arrZ, colors, zBuffer, polyGrid, fillTriangles, mesh, textures, light, normals);
         }
     }
+    public void updateTexture(Model model) {
+        if (model.pathTexture != null) {
+            if (model.texture == null) {
+                model.texture = new Texture();
+            }
+            model.texture.loadImage(model.pathTexture);
+        }
+    }
+
 }

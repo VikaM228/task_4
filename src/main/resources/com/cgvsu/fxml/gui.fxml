@@ -20,9 +20,6 @@
                 </accelerator>
             </MenuItem>
         </Menu>
-        <Menu mnemonicParsing="false" text="Camera Options">
-            <!--удалила тут случайно комментарий-->
-        </Menu>
         <Menu mnemonicParsing="false" text="Change the model">
             <MenuItem mnemonicParsing="false" onAction="#delvertex" text="Delete vertices">
             </MenuItem>
@@ -70,7 +67,7 @@
                              </HBox>
 
                              <Text fill="WHITE" text="Масштаб" />
-                             <HBox alignment="CENTER" spacing="10.0" style="-fx-padding: 0 0 20 0;">
+                             <HBox alignment="CENTER" spacing="10.0">
                                  <Text fill="WHITE" text="X:" />
                                  <TextField fx:id="Sx" prefWidth="70.0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;" text="1" />
                                  <Text fill="WHITE" text="Y:" />
@@ -78,6 +75,37 @@
                                  <Text fill="WHITE" text="Z:" />
                                  <TextField fx:id="Sz" prefWidth="70.0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;" text="1" />
                              </HBox>
+                             <!-- маша новая аффиное преоброзование поворот -->
+                             <Text fill="WHITE" text="Поворот" />
+                             <HBox alignment="CENTER" spacing="10.0" >
+                                 <Text fill="WHITE" text="X:" />
+                                 <TextField fx:id="Rx" prefWidth="70.0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;" text="0" />
+                                 <Text fill="WHITE" text="Y:" />
+                                 <TextField fx:id="Ry" prefWidth="70.0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;" text="0" />
+                                 <Text fill="WHITE" text="Z:" />
+                                 <TextField fx:id="Rz" prefWidth="70.0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;" text="0" />
+                             </HBox>
+
+<!--
+                             <Text fill="WHITE" text="Sldbu" />
+                             <HBox alignment="CENTER" spacing="7.0">
+                                 <Text fill="WHITE" text="XY:" />
+                                 <TextField fx:id="Shxy" prefWidth="70.0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;" text="0" />
+                                 <Text fill="WHITE" text="XZ:" />
+                                 <TextField fx:id="Shxz" prefWidth="70.0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;" text="0" />
+                                 <Text fill="WHITE" text="YX:" />
+                                 <TextField fx:id="Shyx" prefWidth="70.0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;" text="0" />
+                             </HBox>
+                             <HBox alignment="CENTER" spacing="7.0" style="-fx-padding: 0 0 20 0;">
+                                 <Text fill="WHITE" text="YZ:" />
+                                 <TextField fx:id="Shyz" prefWidth="70.0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;" text="0" />
+                                 <Text fill="WHITE" text="ZX:" />
+                                 <TextField fx:id="Shzx" prefWidth="70.0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;" text="0" />
+                                 <Text fill="WHITE" text="ZY:" />
+                                 <TextField fx:id="Shzy" prefWidth="70.0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-alignment: center;" text="0" />
+                             </HBox>
+-->
+
                          <Button fx:id="convert" mnemonicParsing="false" onMouseClicked="#convert" style="-fx-font-size: 14px; -fx-background-radius: 15; -fx-border-radius: 15;" text="Преобразить" />
                          </VBox>
                      </children>

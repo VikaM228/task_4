@@ -108,6 +108,7 @@ public class ATTransformator {
             this.currentMatrix = this.currentMatrix.multiplied(rotationMatrix);
             return this;
         }
+
         //Параллельным переносом (translation) в методичке см стр 55
         private ATBuilder translate(double tX, double tY, double tZ) {
             Matrix4f translationMatrix = new Matrix4f(new double[][]{
@@ -120,6 +121,49 @@ public class ATTransformator {
             this.currentMatrix = this.currentMatrix.multiplied(translationMatrix);
             return this;
         }
+
+
+
+       /* //cldbu
+
+        private ATBuilder shear(double shXY, double shXZ, double shYX, double shYZ, double shZX, double shZY) {
+            Matrix4f shearMatrix = new Matrix4f(new double[][]{
+                    {1, shXY, shXZ, 0},
+                    {shYX, 1, shYZ, 0},
+                    {shZX, shZY, 1, 0},
+                    {0, 0, 0, 1}
+            });
+            this.currentMatrix = this.currentMatrix.multiplied(shearMatrix);
+            return this;
+        }
+
+        public ATBuilder shearXY(double shXY) {
+            return shear(shXY, 0, 0, 0, 0, 0);
+        }
+
+        public ATBuilder shearXZ(double shXZ) {
+            return shear(0, shXZ, 0, 0, 0, 0);
+        }
+
+        public ATBuilder shearYX(double shYX) {
+            return shear(0, 0, shYX, 0, 0, 0);
+        }
+
+        public ATBuilder shearYZ(double shYZ) {
+            return shear(0, 0, 0, shYZ, 0, 0);
+        }
+
+        public ATBuilder shearZX(double shZX) {
+            return shear(0, 0, 0, 0, shZX, 0);
+        }
+
+        public ATBuilder shearZY(double shZY) {
+            return shear(0, 0, 0, 0, 0, shZY);
+        }
+
+        //cldbu*/
+
+
 
         public ATBuilder scaleByX(double sX) {
             return scale(sX, 1, 1);
@@ -173,9 +217,13 @@ public class ATTransformator {
             return rotateZ(rZ);
         }
 
+
+
+
         public ATTransformator build() {
             return new ATTransformator(currentMatrix);
         }
+
     }
 
 

@@ -9,11 +9,14 @@ public class ModelTransformer {
     public static Matrix4f modelMatrix(double tx, double ty, double tz,
                                        double rX, double rY, double rZ,
                                        double sx, double sy, double sz){
+                                       /*double shxy, double shxz, double shyx, double shyz, double shzx,double shzy)*/
         Matrix4f modelMatrix = new Matrix4f(true);
         Matrix4f transitionMatrix = translateMatrix(tx, ty, tz);
         Matrix4f rotationMatrix = rotateMatrix(rX, rY, rZ);
         Matrix4f scaleMatrix = scaleMatrix(sx, sy, sz);
+/*        Matrix4f shearMatrix = shearMatrix(shxy, shxz, shyx,shyz,shzx, shzy );*/
         modelMatrix = MatrixUtils.multiplied(transitionMatrix, rotationMatrix, scaleMatrix, modelMatrix);
+      /*  modelMatrix = MatrixUtils.multiplied(transitionMatrix, rotationMatrix, scaleMatrix, modelMatrix, shearMatrix);*/
         return modelMatrix;
     }
 
@@ -36,4 +39,12 @@ public class ModelTransformer {
         ATTransformator transformator = builder.scaleByVertor(vector3f).build();
         return transformator.getTransformationMatrix();
     }
+
+   /* public static Matrix4f shearMatrix(double shxy, double shxz, double shyx, double shyz, double shzx,double shzy) {
+        ATTransformator.ATBuilder builder = new ATTransformator.ATBuilder();
+       // Vector3f vector3f = new Vector3f(shX, shY, shZ);
+        //ATTransformator transformator = builder.scaleByVertor(vector3f).build();
+        ATTransformator transformator = builder.shearXY(shxy).shearXZ(shxz).shearYX(shyx).shearYZ(shyz).shearZX(shzx).shearZY(shzy).build();
+        return transformator.getTransformationMatrix();
+    }*/
 }

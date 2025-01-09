@@ -76,7 +76,7 @@ public class GuiController {
     private boolean polyGrid = false;
     private boolean fillTriangles = true;
 
-    javafx.scene.paint.Color[] colors = new Color[]{Color.WHITE, Color.WHITE, Color.WHITE};
+    Color[] colors = new Color[]{Color.WHITE, Color.WHITE, Color.WHITE};
 
 
     //кнопки моделей
@@ -101,6 +101,15 @@ public class GuiController {
     public TextField Tx;
     public TextField Ty;
     public TextField Tz;
+    public TextField Rx;
+    public TextField Ry;
+    public TextField Rz;
+/*    public TextField Shxy;
+    public TextField Shxz;
+    public TextField Shyx;
+    public TextField Shyz;
+    public TextField Shzx;
+    public TextField Shzy;*/
     public Button convert;
 
 
@@ -162,7 +171,12 @@ public class GuiController {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Model (*.obj)", "*.obj"));
         fileChooser.setTitle("Load Model");
-        fileChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
+
+        // Determine the path to the target directory dynamically
+        String relativePath = "src/main/resources/com/cgvsu/models";
+        File initialDirectory = new File(System.getProperty("user.dir"), relativePath);
+
+        fileChooser.setInitialDirectory(initialDirectory);
 
         File file = fileChooser.showOpenDialog((Stage) canvas.getScene().getWindow());
         if (file == null) {
@@ -339,6 +353,17 @@ public class GuiController {
         // Set the title of the FileChooser window
         fileChooser.setTitle("Select Texture");
 
+        // Determine the path to the target directory dynamically
+        String relativePath = "src/main/resources/com/cgvsu/textures";
+        File initialDirectory = new File(System.getProperty("user.dir"), relativePath);
+
+        // Set the initial directory for the FileChooser
+        if (initialDirectory.exists()) {
+            fileChooser.setInitialDirectory(initialDirectory);
+        } else {
+            System.out.println("Initial directory does not exist: " + initialDirectory.getAbsolutePath());
+        }
+
         // Add filters for the file types you want to allow (e.g., image files)
         FileChooser.ExtensionFilter imageFilter = new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.bmp");
         fileChooser.getExtensionFilters().add(imageFilter);
@@ -355,6 +380,9 @@ public class GuiController {
             return null;
         }
     }
+
+
+
 
 
     public void addNewCamera(Vector3f cameraPos, Vector3f targetPos){
@@ -462,8 +490,8 @@ public class GuiController {
 
     public void setActiveModelColor(Button addButton){
         for (Button button : addedButtonsModel) {
-            if(button.equals(addButton)) button.setStyle("-fx-background-color: #6d7073");
-            else button.setStyle("-fx-background-color: #4b4e50");
+            if(button.equals(addButton)) button.setStyle("-fx-background-color: #c9c9c9");
+            else button.setStyle("-fx-background-color: #aeaeeb");
 
         }
     }
@@ -516,7 +544,7 @@ public class GuiController {
         addNewCamera(pos, targetPos);
 
     }
-    //кнопочка преобразовать тут её функция при нажатии //TODO добавить правильный выбор моделей
+    //кнопочка преобразовать тут её функция при нажатии
     public void convert(MouseEvent mouseEvent) {
         if (Objects.equals(Tx.getText(), "") || Objects.equals(Ty.getText(), "") || Objects.equals(Tz.getText(), "")
         || Objects.equals(Sx.getText(), "") || Objects.equals(Sy.getText(), "") || Objects.equals(Sz.getText(), "")) {
@@ -524,15 +552,31 @@ public class GuiController {
         } else {
             Matrix4f transposeMatrix = ModelTransformer.modelMatrix(
                     Double.parseDouble(Tx.getText()), Double.parseDouble(Ty.getText()), Double.parseDouble(Tz.getText()),
-                    Double.parseDouble("0"), Double.parseDouble("0"), Double.parseDouble("0"),
+                    Double.parseDouble(Rx.getText()), Double.parseDouble(Ry.getText()), Double.parseDouble(Rz.getText()),
                     Double.parseDouble(Sx.getText()), Double.parseDouble(Sy.getText()), Double.parseDouble(Sz.getText()));
+                    /*Double.parseDouble(Shxy.getText()), Double.parseDouble(Shxz.getText()), Double.parseDouble(Shyx.getText()),
+                    Double.parseDouble(Shyz.getText()), Double.parseDouble(Shzx.getText()), Double.parseDouble(Shzy.getText()));*/
             TranslationModel.move(transposeMatrix, curModel);
+            //System.out.println(transposeMatrix.toString());
             Tx.setText("0");
             Ty.setText("0");
             Tz.setText("0");
+
             Sx.setText("1");
             Sy.setText("1");
             Sz.setText("1");
+            //маша новая аффиное преоброзование поворот
+            Rx.setText("0");
+            Ry.setText("0");
+            Rz.setText("0");
+
+       /*     Shxy.setText("0");
+            Shxz.setText("0");
+            Shyx.setText("0");
+            Shyz.setText("0");
+            Shzx.setText("0");
+            Shzy.setText("0");*/
+
         }
     }
 

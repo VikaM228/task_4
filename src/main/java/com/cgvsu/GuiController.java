@@ -197,9 +197,7 @@ public class GuiController {
             addModelButtons();
         } catch (IOException exception) {
             showError("Ошибка чтения файла", "Не удалось прочитать файл"+ exception.getMessage());
-        } /*catch (InvalidFileFormatException exception) {
-            showError("Некорректный файл", "Файл имеет неправильный формат"+ exception.getMessage());
-        }*/
+        }
         catch (Exception exception) {
             showError("Неизвестная ошибка", "Произошла неизвестная ошибка" + exception.getMessage());
         }
@@ -252,7 +250,7 @@ public class GuiController {
             // Преобразуем строки в целые числа и добавляем в список
             for (String vertexStr : verticesArray) {
                 try {
-                    verticesToDelete.add(Integer.parseInt(vertexStr.trim())); // парсим строку в Integer
+                    verticesToDelete.add(Integer.parseInt(vertexStr.trim()));
                 } catch (NumberFormatException e) {
                     showError("Ошибка ввода", "Некоторые элементы не являются целыми числами.");
                     return; // Выход из метода, если был неправильный ввод
@@ -260,18 +258,18 @@ public class GuiController {
             }
             boolean flag1 = askForFlag("Удалять нормали?");
             boolean flag2 = askForFlag("Удалять текстурные вершины?");
-            // Создаем экземпляр DeleteVertex для удаления вершин
 
+            // Создаем экземпляр DeleteVertex для удаления вершин
             DeleteVertex.deleteVertex(curModel, verticesToDelete, flag1, flag2);
             activeModelnull();
         } else {
-            showError("404", "Введите индексы вершин.");
+            showError("Индексы отсутствуют", "Введите индексы вершин.");
         }
     }
 
     private void activeModelnull() {
         if (curModel.getVertices().isEmpty()) {
-            models.remove(curModel);
+            models.remove(curModel);//удаляем из общ списка
             if (!models.isEmpty()) {
                 curModel = models.get(models.size() - 1);
             }
@@ -279,7 +277,6 @@ public class GuiController {
     }
     // Метод для запроса флажка true/false для каждой вершины
     private boolean askForFlag(String headerText) {
-        // Создаем диалог для ввода флажка (true/false)
         ChoiceDialog<String> dialog = new ChoiceDialog<>("Да", "Да", "Нет");
         dialog.setTitle("Выбор флажка");
         dialog.setHeaderText(headerText);
@@ -347,10 +344,9 @@ public class GuiController {
     }
 
     public static String texturePathPopup(Stage stage) {
-        // Create a new FileChooser instance
         FileChooser fileChooser = new FileChooser();
 
-        // Set the title of the FileChooser window
+
         fileChooser.setTitle("Select Texture");
 
         // Determine the path to the target directory dynamically
@@ -368,15 +364,13 @@ public class GuiController {
         FileChooser.ExtensionFilter imageFilter = new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.bmp");
         fileChooser.getExtensionFilters().add(imageFilter);
 
-        // Open the file chooser dialog and get the selected file
+
         File selectedFile = fileChooser.showOpenDialog(stage);
 
-        // Check if the user selected a file
         if (selectedFile != null) {
-            // Return the path of the selected file as a string
+
             return selectedFile.getAbsolutePath();
         } else {
-            // Return null if no file was selected
             return null;
         }
     }
@@ -397,17 +391,17 @@ public class GuiController {
             return;
         }
         if (curCamera == camerasList.get(index)){
-            // Марин это тебе место для обработки ошибок
             curCamera = camerasList.get(index - 1);
         }
         camerasList.remove(index);
-        cameraPane.getChildren().remove(addedButtonsCamera.get(index));
+        cameraPane.getChildren().remove(addedButtonsCamera.get(index));//удаление кнопок с камерой
         cameraPane.getChildren().remove(deletedButtonsCamera.get(index));
-        addedButtonsCamera.remove(index);
+        addedButtonsCamera.remove(index);//удаление ссылок на кнопки
         deletedButtonsCamera.remove(index);
         index = 1;
         for (Button button: addedButtonsCamera){
             button.setText("Камера " + index);
+            //установка расположения кнопочек
             if (index != 1) {
                 button.setLayoutY((!addedButtonsCamera.isEmpty()) ?
                         addedButtonsCamera.get(index - 2).getLayoutY() + 70 :
@@ -534,7 +528,7 @@ public class GuiController {
 
     }
 
-    //кнопочка добавит камеру тут добавляется камера
+    // тут добавляется камера
     public void createCamera(MouseEvent mouseEvent) {
         Vector3f pos = new Vector3f(Float.parseFloat(eyeX.getText()),
                 Float.parseFloat(eyeY.getText()), Float.parseFloat(eyeZ.getText()));
@@ -544,7 +538,7 @@ public class GuiController {
         addNewCamera(pos, targetPos);
 
     }
-    //кнопочка преобразовать тут её функция при нажатии
+    //кнопочка преобразовать тут её функция при нажатии //TODO добавить правильный выбор моделей
     public void convert(MouseEvent mouseEvent) {
         if (Objects.equals(Tx.getText(), "") || Objects.equals(Ty.getText(), "") || Objects.equals(Tz.getText(), "")
         || Objects.equals(Sx.getText(), "") || Objects.equals(Sy.getText(), "") || Objects.equals(Sz.getText(), "")) {

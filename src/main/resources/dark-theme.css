@@ -1,0 +1,200 @@
+/* Общий фон приложения */
+.root {
+    -fx-background-color: #22132c; /* Тёмно-серый фон */
+    -fx-text-fill: #c9c9c9;        /* Светлый текст */
+
+    /* 
+    основной темный: 22132c
+    акцентный темный: 3f2352
+    основной светлый: c9c9c9
+    акцентный светлый: aeaeeb
+    
+    */
+
+
+}
+
+
+/* Стили кнопок */
+
+.button {
+    -fx-background-color: #aeaeeb; /* Серый фон кнопки */
+    -fx-text-fill: #22132c;        /* Белый текст кнопки */
+    -fx-background-radius: 5;      /* Скругление углов */
+}
+
+.button:hover {
+    -fx-background-color: #8989ca; /* Цвет кнопки при наведении */
+}
+
+/* Стили текстовых полей */
+.text-field {
+    -fx-background-color: #aeaeeb; /* Серый фон текстового поля */
+    -fx-text-fill: #22132c;        /* Светлый текст */
+    -fx-border-color: #c9c9c9;     /* Цвет границы */
+    -fx-background-radius: 5;      /* Скруглённые углы */
+}
+
+/* Стили меток (текст) (Label) */
+.label {
+    -fx-text-fill: #d0d0d0; /* Светлый текст */
+}
+
+/* Стили панелей и контейнеров */
+.vbox, .hbox, .grid-pane {
+    -fx-background-color: #22132c; /* Тёмный фон для контейнеров */
+}
+
+.menu-bar {
+    -fx-background-color: #3f2352; /* верхний левый угол / файловое меню */
+    -fx-border-color: transparent;
+}
+/*кнопочки*/
+.menu {
+    -fx-background-color: #3f2352;
+}
+/*кнопочки внутри кнопочек*/
+.menu-item {
+    -fx-background-color: #3f2352; /* Тёмный фон кнопок меню */
+    -fx-text-fill: #c9c9c9; /* Белый цвет текста */
+    -fx-border-color: transparent; /* Убираем обводку */
+    -fx-border-width: 0;
+}
+
+.menu-item:hover {
+    -fx-background-color: #aeaeeb; /* Цвет при наведении */
+}
+
+.menu-item:focused {
+    -fx-text-fill: #22132c;
+}
+
+.menu-item:focused {
+    -fx-background-color: #aeaeeb; /* Цвет при фокусе */
+    -fx-border-color: transparent; /* Убираем рамку при фокусе */
+    -fx-text-fill: #3f2352; /* Белый цвет текста */
+}
+/* рамка доп кнопок*/
+.context-menu {
+    -fx-background-color: #3f2352; /* Фон контекстного меню */
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-effect: none; /* Убираем тень */
+}
+
+
+
+
+Button {
+    -fx-background-color: #5E81AC;
+    -fx-text-fill: white;
+    -fx-border-radius: 5;
+}
+
+TextField {
+    -fx-background-color: #ECEFF4;
+}
+
+
+/* меню настроек слева */
+.tab-pane {
+    -fx-background-color: #3f2352;
+    -fx-border-width: 0px;
+}
+
+/* вкладки настроек сверху */
+.tab {
+    -fx-background-color: #3f2352; /* не выбрано */
+}
+
+
+/* задний фон вкладок сверху */
+.tab-header-background{
+    -fx-background-color: #22132c; 
+}
+
+.tab:selected, .tab:hover {
+    -fx-background-color: #aeaeeb; /* выбрано */
+}
+
+.tab:selected .tab-label, .tab:hover .tab-label{
+    -fx-text-fill: #22132c;
+}
+
+
+
+/* Стили для кнопок вкладок */
+.tab-label {
+    -fx-text-fill: #c9c9c9; /* Белый текст вкладок */
+}
+.checkbox {
+    -fx-text-fill: white; /* Замените 'red' на нужный вам цвет */
+}
+
+
+.scroll-pane {
+    -fx-background: #22132c; /* Фон ScrollPane */
+    -fx-border-color: #3f2352; /* Цвет границ */
+}
+/* Пример: настройка вертикальной полосы прокрутки */
+.scroll-pane .scroll-bar:vertical {
+ -fx-background-color: #3f2352; /* Цвет фона */
+ -fx-background-insets: 0; /* Удалить вставки по умолчанию */
+}
+
+/* Пример: настройка горизонтальной полосы прокрутки */
+.scroll-pane .scroll-bar:horizontal {
+ -fx-background-color: #3f2352;
+ -fx-background-insets: 0;
+}
+/* Пример: изменение размера и цвета индикатора вертикальной прокрутки */
+.scroll-pane .scroll-bar:vertical .thumb {
+ -fx-background-color: #aeaeeb; /* Цвет индикатора */
+ -fx-min-width: 3px; /* Минимальная ширина */
+}
+
+/* Пример: изменение размера и цвета индикатора горизонтальной прокрутки */
+.scroll-pane .scroll-bar:horizontal .thumb {
+ -fx-background-color: #aeaeeb; /* Цвет индикатора */
+  -fx-min-width: 3px; /* Минимальная высота */
+}
+
+.scroll-pane .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #c9c9c9; /* Цвет индикатора */
+    -fx-min-width: 3px; /* Минимальная ширина */
+   }
+   
+   /* Пример: изменение размера и цвета индикатора горизонтальной прокрутки */
+   .scroll-pane .scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: #c9c9c9; /* Цвет индикатора */
+     -fx-min-width: 3px; /* Минимальная высота */
+   }
+
+
+.scroll-pane .corner {
+    -fx-background-color: transparent; /* Цвет совпадает с фоном */
+}
+
+
+.vbox-custom {
+    -fx-background-color: #22132c;
+    -fx-background-radius: 15;
+    -fx-padding: 15;
+    -fx-spacing: 10;
+    -fx-alignment: center;
+}
+
+
+.vbox-custom Text {
+    -fx-fill: #c9c9c9; 
+    -fx-font-size: 14px;
+}
+
+
+.vbox-custom .color-picker {
+    -fx-background-color: transparent;
+    -fx-border-color: #c9c9c9;
+    -fx-border-radius: 8;
+    -fx-padding: 5;
+    -fx-text-fill: #c9c9c9;
+}

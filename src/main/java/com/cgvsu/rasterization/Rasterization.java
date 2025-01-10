@@ -114,16 +114,23 @@ public class Rasterization {
 
     private static double[] barizentricCalculator(int x, int y, int[] arrX, int[] arrY){
         final double generalDeterminant = determinator(new int[][]{arrX, arrY, new int[]{1, 1, 1}});
-        final double coordinate0 = Math.abs(determinator(
+        double coordinate0 = Math.abs(determinator(
                 new int[][]{new int[]{x, arrX[1], arrX[2]}, new int[]{y, arrY[1], arrY[2]}, new int[]{1, 1, 1}}) /
                 generalDeterminant);
-        final double coordinate1 = Math.abs(determinator(
+        double coordinate1 = Math.abs(determinator(
                 new int[][]{new int[]{arrX[0], x, arrX[2]}, new int[]{arrY[0], y, arrY[2]}, new int[]{1, 1, 1}}) /
                 generalDeterminant);
-        final double coordinate2 = Math.abs(determinator(
+        double coordinate2 = Math.abs(determinator(
                 new int[][]{new int[]{arrX[0], arrX[1], x}, new int[]{arrY[0], arrY[1], y}, new int[]{1, 1, 1}}) /
                 generalDeterminant);
+        double sum = coordinate0 + coordinate1 + coordinate2;
+        if (Math.abs(sum - 1.0) > 1e-7) {
+            coordinate0 /= sum;
+            coordinate1 /= sum;
+            coordinate2 /= sum;
+        }
         return new double[]{coordinate0, coordinate1, coordinate2};
+
     }
 
     public static int[] getGradientCoordinatesRGB(final double[] baristicCoords, final Color[] color) {
@@ -171,19 +178,21 @@ public class Rasterization {
     }
 
     public static double[] getGradientCoordinatesTexture(double[] barizentric, Vector2f[] texture) {
-        return new double[] {(barizentric[0] * texture[0].getX()) +  (barizentric[1] * texture[1].getX()) +  (barizentric[2] * texture[2].getX()),
-                (barizentric[0] * texture[0].getX()) + (barizentric[1] * texture[1].getY()) + (barizentric[2] * texture[2].getY())};
+        double u = (barizentric[0] * texture[0].getX()) + (barizentric[1] * texture[1].getX()) + (barizentric[2] * texture[2].getX());
+        double v = (barizentric[0] * texture[0].getY()) + (barizentric[1] * texture[1].getY()) + (barizentric[2] * texture[2].getY());
+        return new double[]{u, v};
     }
 
     public static void texture(double[] barizentric, Vector2f[] textures, Model mesh, int[] rgb){
         double[] texture = getGradientCoordinatesTexture(barizentric, textures);
         int u = (int) Math.round(texture[0] * (mesh.texture.wight - 1));
         int v = (int) Math.round(texture[1] * (mesh.texture.height - 1));
-        if (u < mesh.texture.wight && v < mesh.texture.height) {
+        if (u >= 0 && u < mesh.texture.wight && v >= 0 && v < mesh.texture.height) {
             rgb[0] = mesh.texture.pixelData[u][v][0];
             rgb[1] = mesh.texture.pixelData[u][v][1];
             rgb[2] = mesh.texture.pixelData[u][v][2];
         }
+
     }
     public static void calculateLight(int[] rgb, double[] light, Vector3f normal){
         double k = 0.5;

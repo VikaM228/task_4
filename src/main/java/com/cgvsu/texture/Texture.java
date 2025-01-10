@@ -25,9 +25,10 @@ public class Texture {
             for(int i = 0; i < img.getWidth(); i++){  //для лица и куба
                 for(int j = 0; j < img.getHeight(); j++){
                     rgb = getPixelData(img, i, j);
-                    pixelData[img.getWidth() - 1 - i][img.getHeight() - 1 - j][0] = rgb[0];
-                    pixelData[img.getWidth() - 1 - i][img.getHeight() - 1 - j][1] = rgb[1];
-                    pixelData[img.getWidth() - 1 - i][img.getHeight() - 1 - j][2] = rgb[2];
+                    pixelData[i][j][0] = rgb[0];
+                    pixelData[i][j][1] = rgb[1];
+                    pixelData[i][j][2] = rgb[2];
+
                 }
             }
         } catch (IOException e) {

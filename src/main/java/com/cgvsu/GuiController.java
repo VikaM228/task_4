@@ -328,7 +328,30 @@ public class GuiController {
     }
 
     public void lightning(ActionEvent actionEvent) {
+        curModel.isActiveLighting = !curModel.isActiveLighting;
+        System.out.println("Lighting toggled: " + curModel.isActiveLighting);
+        renderScene(); // Метод для обновления сцены после изменения.
     }
+
+    public void renderScene() {
+        if (curModel != null && curCamera != null) {
+            RenderEngine.render(
+                    canvas.getGraphicsContext2D(),
+                    curCamera,
+                    curModel,
+                    (int) canvas.getWidth(),
+                    (int) canvas.getHeight(),
+                    zBuffer,
+                    polyGrid,           // Глобальная переменная для сетки
+                    fillTriangles,      // Глобальная переменная для заливки треугольников
+                    colors              // Массив цветов
+            );
+        } else {
+            System.out.println("Rendering skipped: No model or camera.");
+        }
+    }
+
+
 
     public void texture(ActionEvent actionEvent) {
 

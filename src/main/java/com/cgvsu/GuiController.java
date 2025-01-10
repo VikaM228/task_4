@@ -112,7 +112,7 @@ public class GuiController {
     public TextField Shzy;*/
     public Button convert;
 
-
+    //bpvtytybz
 
     //для добавления камеры
     public TextField eyeX;
